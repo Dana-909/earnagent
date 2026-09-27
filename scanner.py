@@ -3,7 +3,8 @@ NOW=datetime.datetime.now(datetime.timezone.utc)
 DAILY_TARGET_MIN=50
 DAILY_TARGET_MAX=100
 SOURCES=[
- ("github_bounties","https://api.github.com/search/issues?q=is%3Aopen+%28bounty+OR+reward%29+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
+ ("github_bounty","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+bounty+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
+ ("github_reward","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+reward+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
 ]
 def fetch(url):
  req=urllib.request.Request(url,headers={"User-Agent":"EarnAgent/1.0","Accept":"application/vnd.github+json"})
@@ -47,7 +48,9 @@ for name,url in SOURCES:
        "reward_usd":reward,"updated_at":i.get("updated_at"),"body":body[:700]}
    op["score"]=score(op); op["quality_checks"],op["execution_eligible"]=quality_gate(op); ops.append(op)
  except Exception as e: errors.append({"source":name,"error":str(e)})
-ops.sort(key=lambda x:(x["score"],x["reward_usd"]),reverse=True)
+dedup={x["url"]:x for x in ops if x.get("url")}
+ops=list(dedup.values())
+ops.sort(key=lambda x:(x["execution_eligible"],x["score"],x["reward_usd"]),reverse=True)
 # This agent deliberately does not claim/submission-spam third-party tasks without repository-level validation.
 # It autonomously scouts and ranks only; execution is enabled only for tasks whose requirements can be verified programmatically.
 eligible=[x for x in ops if x.get("execution_eligible")]
