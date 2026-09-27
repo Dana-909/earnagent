@@ -1,4 +1,4 @@
-name: Deploy static site
+name: EarnAgent autonomous cycle
 on:
   push:
     branches: [main]
@@ -10,25 +10,23 @@ permissions:
   pages: write
   id-token: write
 concurrency:
-  group: pages
+  group: earnagent
   cancel-in-progress: true
 jobs:
-  deploy:
+  run:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build public market snapshot
+      - name: Run autonomous earning scout
         run: python3 scanner.py
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v5
         with:
           enablement: true
       - uses: actions/upload-pages-artifact@v4
         with:
           path: .
-      - name: Deploy
-        id: deployment
+      - id: deployment
         uses: actions/deploy-pages@v4
