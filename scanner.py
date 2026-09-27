@@ -23,7 +23,8 @@ def quality_gate(x):
          "no_owner_action":not bool(re.search(r"\\b(kyc|identity verification|phone call|onsite|purchase|deposit|subscription|account required)\\b",t)),
          "digital":not bool(re.search(r"\\b(ship|delivery|physical|in person|on-site)\\b",t)),
          "not_stale":not bool(re.search(r"archived duplicate|historical snapshot|already paid|waiting_sponsor|unavailable|do not claim",t,re.I)),
-         "no_upfront_spend":not bool(re.search(r"claim bond|entry bond|deposit|fund .*bounty|pay .*fee|hosted proof.*cost",t,re.I))}
+         "no_upfront_spend":not bool(re.search(r"claim bond|entry bond|deposit|fund .*bounty|pay .*fee|hosted proof.*cost",t,re.I)),
+         "verification_ready":not bool(re.search(r"verification-unavailable|recovery-reserved|quarantined|do not claim|funding-pending|not funded",t,re.I))}
  return checks, all(checks.values())
 
 def score(x):
@@ -67,7 +68,7 @@ eligible=[x for x in ops if x.get("execution_eligible")]
 target_value=sum(x.get("reward_usd",0) for x in eligible[:5])
 payload={"generated_at":NOW.isoformat(),"daily_target_usd":{"min":DAILY_TARGET_MIN,"max":DAILY_TARGET_MAX},"eligible_pipeline_value_usd":target_value,"status":"ok" if not errors else "partial","opportunities_found":len(ops),
  "autonomously_completed":0,"verified_revenue_usd":0,"errors":errors,"opportunities":ops[:50],
- "execution_status":"quality_gated_scouting","quality_policy":{"rule":"Target $50-$100/day only through verified, high-quality work; never lower the quality bar to hit the target.","requirements":["requirements parsed","deliverable testable","no owner-only action","digital execution","not stale or already paid","no upfront spend","verification before submission"]},"note":"No revenue is counted until an external source confirms payment."}
+ "execution_status":"quality_gated_scouting","quality_policy":{"rule":"Target $50-$100/day only through verified, high-quality work; never lower the quality bar to hit the target.","requirements":["requirements parsed","deliverable testable","no owner-only action","digital execution","not stale or already paid","no upfront spend","verification ready","verification before submission"]},"note":"No revenue is counted until an external source confirms payment."}
 os.makedirs("data",exist_ok=True)
 with open("data/earnagent.json","w",encoding="utf-8") as f:json.dump(payload,f,ensure_ascii=False,separators=(",",":"))
 print(json.dumps({k:payload[k] for k in ("status","opportunities_found","autonomously_completed","verified_revenue_usd")}))
