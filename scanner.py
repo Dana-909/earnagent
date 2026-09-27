@@ -71,11 +71,14 @@ eligible=[x for x in ops if x.get("execution_eligible")]
 target_value=sum(x.get("reward_usd",0) for x in eligible[:5])
 # Daily target controller: prioritize enough verified-quality pipeline to cover the minimum goal with redundancy.
 coverage_ratio=round(target_value/DAILY_TARGET_MIN,2) if DAILY_TARGET_MIN else 0
+# Reliability controller: never confuse discovery success with end-to-end readiness.
+health={"discovery":"ok" if not errors else "degraded","quality_gate":"ok","payout":"locked","execution":"not_enabled","submission":"not_enabled"}
+ready_for_paid_execution=all(health[k]=="ok" for k in ("discovery","quality_gate")) and health["payout"]=="ok" and health["execution"]=="ok" and health["submission"]=="ok"
 search_mode="expand_sources" if target_value<DAILY_TARGET_MIN else ("build_reserve" if target_value<DAILY_TARGET_MAX else "quality_first")
 eligible.sort(key=lambda x:(x.get("score",0),x.get("reward_usd",0)),reverse=True)
 payout_ready=[x for x in eligible if x.get("source")=="agent_bounties"]
 quality_summary={"eligible":len(eligible),"rejected":len(ops)-len(eligible),"top_eligible":[{"title":x["title"],"reward_usd":x["reward_usd"],"url":x["url"],"score":x["score"]} for x in eligible[:5]]}
-payload={"generated_at":NOW.isoformat(),"daily_target_usd":{"min":DAILY_TARGET_MIN,"max":DAILY_TARGET_MAX},"eligible_pipeline_value_usd":target_value,"daily_target_controller":{"coverage_ratio":coverage_ratio,"mode":search_mode,"minimum_pipeline_usd":DAILY_TARGET_MIN,"stretch_pipeline_usd":DAILY_TARGET_MAX},"quality_summary":quality_summary,"payout_control":{"configured":False,"safe_mode":True,"rule":"Do not claim or submit payable work until a compatible payout destination is configured.","payout_ready_candidates":len(payout_ready)},"status":"ok" if not errors else "partial","opportunities_found":len(ops),
+payload={"generated_at":NOW.isoformat(),"daily_target_usd":{"min":DAILY_TARGET_MIN,"max":DAILY_TARGET_MAX},"eligible_pipeline_value_usd":target_value,"system_health":health,"ready_for_paid_execution":ready_for_paid_execution,"daily_target_controller":{"coverage_ratio":coverage_ratio,"mode":search_mode,"minimum_pipeline_usd":DAILY_TARGET_MIN,"stretch_pipeline_usd":DAILY_TARGET_MAX},"quality_summary":quality_summary,"payout_control":{"configured":False,"safe_mode":True,"rule":"Do not claim or submit payable work until a compatible payout destination is configured.","payout_ready_candidates":len(payout_ready)},"status":"ok" if not errors else "partial","opportunities_found":len(ops),
  "autonomously_completed":0,"verified_revenue_usd":0,"errors":errors,"opportunities":ops[:50],
  "execution_status":"quality_gated_scouting","quality_policy":{"rule":"Target $50-$100/day only through verified, high-quality work; never lower the quality bar to hit the target.","requirements":["requirements parsed","deliverable testable","no owner-only action","digital execution","not stale or already paid","no upfront spend","verification ready","verification before submission"]},"note":"No revenue is counted until an external source confirms payment."}
 os.makedirs("data",exist_ok=True)
