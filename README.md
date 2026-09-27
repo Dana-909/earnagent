@@ -11,3 +11,6 @@ The agent does not impersonate the owner, accept third-party legal terms, bypass
 
 ## Automation
 GitHub Actions runs the scout hourly and deploys the resulting `data/earnagent.json` to Pages. Paradox Engine source has been superseded in the main product; its history remains available in Git.
+
+## Deployment note
+Each scheduled run creates a fresh Pages artifact; failed deployment attempts are recovered with a fresh workflow run rather than reusing an artifact-bearing attempt.
