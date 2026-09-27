@@ -3,6 +3,7 @@ NOW=datetime.datetime.now(datetime.timezone.utc)
 DAILY_TARGET_MIN=50
 DAILY_TARGET_MAX=100
 SOURCES=[
+ ("agent_bounties","https://api.agentbounties.app/v1/base/autonomous-bounties/feed?network=base-mainnet&claimable_only=true"),
  ("github_bounty","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+bounty+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
  ("github_reward","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+reward+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
 ]
@@ -38,8 +39,17 @@ ops=[]; errors=[]
 for name,url in SOURCES:
  try:
   data=fetch(url)
-  for i in data.get("items",[]):
+  if name=="agent_bounties":
+   rows=data.get("bounties",data.get("items",data if isinstance(data,list) else []))
+  else: rows=data.get("items",[])
+  for i in rows:
    if i.get("pull_request"): continue
+   if name=="agent_bounties":
+    body=str(i.get("description") or i.get("terms") or "")[:5000]; title=str(i.get("title") or i.get("name") or "Agent bounty")
+    reward=money(str(i))
+    if reward is None: continue
+    op={"source":name,"title":title,"url":i.get("url") or i.get("html_url"),"repository_url":i.get("repository_url"),"reward_usd":reward,"updated_at":i.get("updated_at"),"body":body[:700]}
+    op["score"]=score(op); op["quality_checks"],op["execution_eligible"]=quality_gate(op); ops.append(op); continue
    body=(i.get("body") or "")[:5000]; title=i.get("title") or ""
    reward=money(title+" "+body)
    # Do not pretend vague mentions are payable work: require explicit bounty/reward and a numeric USD amount.
