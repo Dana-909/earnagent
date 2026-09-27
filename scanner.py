@@ -12,6 +12,14 @@ def money(text):
   try: vals.append(float(n.replace(",","")))
   except: pass
  return max(vals) if vals else None
+def quality_gate(x):
+ t=(x.get("title","")+" "+x.get("body","")).lower()
+ checks={"clear_deliverable":bool(re.search(r"\\b(fix|implement|add|write|document|translate|test|create|update)\\b",t)),
+         "has_reward":bool(x.get("reward_usd") and x["reward_usd"]>0),
+         "no_owner_action":not bool(re.search(r"\\b(kyc|identity verification|phone call|onsite|purchase|deposit|subscription|account required)\\b",t)),
+         "digital":not bool(re.search(r"\\b(ship|delivery|physical|in person|on-site)\\b",t))}
+ return checks, all(checks.values())
+
 def score(x):
  s=0
  if x.get("reward_usd"): s+=min(60,x["reward_usd"]/10)
@@ -33,14 +41,14 @@ for name,url in SOURCES:
    if reward is None or not re.search(r"\b(bounty|reward)\b",title+" "+body,re.I): continue
    op={"source":name,"title":title,"url":i.get("html_url"),"repository_url":i.get("repository_url"),
        "reward_usd":reward,"updated_at":i.get("updated_at"),"body":body[:700]}
-   op["score"]=score(op); ops.append(op)
+   op["score"]=score(op); op["quality_checks"],op["execution_eligible"]=quality_gate(op); ops.append(op)
  except Exception as e: errors.append({"source":name,"error":str(e)})
 ops.sort(key=lambda x:(x["score"],x["reward_usd"]),reverse=True)
 # This agent deliberately does not claim/submission-spam third-party tasks without repository-level validation.
 # It autonomously scouts and ranks only; execution is enabled only for tasks whose requirements can be verified programmatically.
 payload={"generated_at":NOW.isoformat(),"status":"ok" if not errors else "partial","opportunities_found":len(ops),
  "autonomously_completed":0,"verified_revenue_usd":0,"errors":errors,"opportunities":ops[:50],
- "execution_status":"scouting","note":"No revenue is counted until an external source confirms payment."}
+ "execution_status":"quality_gated_scouting","quality_policy":{"rule":"Never submit low-confidence work merely to maximize task count.","requirements":["requirements parsed","deliverable testable","no owner-only action","digital execution","verification before submission"]},"note":"No revenue is counted until an external source confirms payment."}
 os.makedirs("data",exist_ok=True)
 with open("data/earnagent.json","w",encoding="utf-8") as f:json.dump(payload,f,ensure_ascii=False,separators=(",",":"))
 print(json.dumps({k:payload[k] for k in ("status","opportunities_found","autonomously_completed","verified_revenue_usd")}))
