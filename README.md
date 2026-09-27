@@ -1,16 +1,21 @@
-# Paradox Engine v0
+# Paradox Engine v1
 
-Research prototype for detecting logical inconsistencies between related prediction-market contracts.
+Public research scanner for logical inconsistencies between related prediction-market contracts.
 
-## Current detector
-- Loads public active market metadata in the browser.
-- Extracts YES prices and explicit calendar dates.
-- Groups semantically similar questions after replacing dates.
-- Tests date monotonicity (earlier-deadline event should not be priced above an otherwise equivalent later-deadline event).
-- Shows candidates only; it does **not** execute trades.
+## Production flow
+GitHub Actions runs `scanner.py` on deploy and hourly. The scanner fetches active public market metadata server-side, groups date-nested contracts, tests monotonicity, checks available best bid/ask, minimum pair liquidity and resolution-wording similarity, then publishes a static `data/results.json`. The browser only renders that generated snapshot, avoiding direct API/CORS dependence.
 
-## Important
-A raw logical gap is not a guaranteed executable arbitrage. Resolution rules, market wording, liquidity, spread, fees, slippage, settlement and execution risk must be verified independently.
+## Candidate gates
+A **qualified paper candidate** currently requires:
+- raw date-monotonicity violation > 0.5 percentage points;
+- positive executable proxy: earlier YES best bid > later YES best ask;
+- minimum reported liquidity of $1,000 on both sides;
+- resolution wording similarity > 70%.
 
-## Next validation gate
-Add exact resolution-rule comparison and order-book executable prices before treating any candidate as economically meaningful.
+This is deliberately a research/paper signal, not a guaranteed arbitrage or trade instruction. Order-book depth, fees, slippage, settlement semantics and simultaneous execution can still remove the apparent edge.
+
+## Reliability
+If the upstream market fetch fails, the build fails rather than silently publishing invented fresh data. The UI displays the timestamp of the latest successfully deployed server scan.
+
+## Next research frontier
+Full depth-aware CLOB simulation, explicit fee/slippage models, stronger semantic rule equivalence, and additional deterministic relation classes (threshold nesting, mutually exclusive/exhaustive partitions and implication).
