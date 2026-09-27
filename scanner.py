@@ -10,7 +10,7 @@ for m in markets:
     except: yes=None
     rows.append({"id":m.get("id"),"question":m.get("question"),"slug":m.get("slug"),"yes":yes,
       "liquidity":m.get("liquidity"),"volume":m.get("volume"),"endDate":m.get("endDate"),
-      "description":m.get("description") or m.get("rules") or ""})
+      "description":m.get("description") or m.get("rules") or "", "bestBid":m.get("bestBid"), "bestAsk":m.get("bestAsk"), "spread":m.get("spread"), "clobTokenIds":m.get("clobTokenIds")})
 os.makedirs("data",exist_ok=True)
 with open("data/markets.json","w",encoding="utf-8") as f:
  json.dump({"generated_at":datetime.datetime.now(datetime.timezone.utc).isoformat(),"count":len(rows),"markets":rows},f,ensure_ascii=False,separators=(",",":"))
