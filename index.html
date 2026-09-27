@@ -12,22 +12,26 @@ code{color:#8bd5ff}.pill{display:inline-block;border:1px solid #2e526f;border-ra
 <p class="sub">Finds logical inconsistencies between related prediction-market contracts. It does not predict outcomes or place trades. Every candidate must survive resolution-rule, liquidity, spread, fee and execution checks.</p>
 <div class="bar"><button id="scan">Scan public markets</button><span id="status" class="status">Ready.</span></div>
 <div class="grid"><div class="card"><div class="metric" id="markets">0</div><div class="label">markets loaded</div></div><div class="card"><div class="metric" id="pairs">0</div><div class="label">candidate relations</div></div><div class="card"><div class="metric" id="flags">0</div><div class="label">logical flags</div></div><div class="card"><div class="metric" id="execflags">0</div><div class="label">high-confidence paper candidates</div></div></div>
-<div class="card"><b>What v0 checks</b><p class="sub">Date monotonicity: for semantically similar “by DATE” markets, an earlier deadline is a subset of a later deadline. If the earlier YES price is materially higher, the pair is flagged for manual rule verification.</p></div>
-<div class="card"><table><thead><tr><th>Earlier market</th><th>Later market</th><th>Prices</th><th>Raw gap</th><th>Executable check</th><th>Liquidity</th><th>Rule check</th></tr></thead><tbody id="out"><tr><td colspan="5" class="sub">No scan yet.</td></tr></tbody></table></div>
-<div class="card"><b>Guardrail</b><p class="sub">A flag is not guaranteed profit. Different resolution wording, stale quotes, thin books, fees, slippage, settlement and execution can erase the apparent edge. v0 deliberately reports candidates, not trade instructions.</p></div>
+<div class="card"><b>What v1 checks</b><p class="sub">Date monotonicity: for semantically similar “by DATE” markets, an earlier deadline is a subset of a later deadline. If the earlier YES price is materially higher, the pair is flagged for manual rule verification.</p></div>
+<div class="card"><table><thead><tr><th>Earlier market</th><th>Later market</th><th>Prices</th><th>Raw gap</th><th>Executable check</th><th>Liquidity</th><th>Rule check</th></tr></thead><tbody id="out"><tr><td colspan="7" class="sub">No scan yet.</td></tr></tbody></table></div>
+<div class="card"><b>Guardrail</b><p class="sub">A flag is not guaranteed profit. Different resolution wording, stale quotes, thin books, fees, slippage, settlement and execution can erase the apparent edge. v1 deliberately reports candidates, not trade instructions.</p></div>
 </main><script>
-const API='./data/markets.json';
-const months={january:0,february:1,march:2,april:3,may:4,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
-function yesPrice(m){if(Number.isFinite(+m.yes))return +m.yes;try{let p=JSON.parse(m.outcomePrices||'[]');return +p[0]}catch{return NaN}}
-function dateOf(s){s=(s||'').toLowerCase();let re=/\b(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(20\d{2}))?/;let x=s.match(re);if(!x)return null;return new Date(+(x[3]||new Date().getFullYear()),months[x[1]],+x[2])}
-function ruleRisk(a,b){let x=(a.description||a.rules||'').trim().toLowerCase(),y=(b.description||b.rules||'').trim().toLowerCase();if(!x||!y)return 'rules unavailable'; let A=new Set(x.split(/\W+/).filter(z=>z.length>4)),B=new Set(y.split(/\W+/).filter(z=>z.length>4));let inter=[...A].filter(z=>B.has(z)).length,den=Math.max(1,Math.min(A.size,B.size));return inter/den>.7?'similar wording':'verify rules'}
-function signature(s){return (s||'').toLowerCase().replace(/\b(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}(?:st|nd|rd|th)?(?:,?\s+20\d{2})?/g,'DATE').replace(/[^a-z0-9]+/g,' ').replace(/\b(by|before|on|date|will|the|a|an)\b/g,' ').replace(/\s+/g,' ').trim()}
-async function run(){let b=document.querySelector('#scan'),st=document.querySelector('#status');b.disabled=true;st.textContent='Loading public market metadata…';try{
-let r=await fetch(API+'?t='+Date.now());if(!r.ok)throw Error('HTTP '+r.status);let snap=await r.json(),ms=snap.markets||[];document.querySelector('#markets').textContent=ms.length;
-let groups={};for(let m of ms){let d=dateOf(m.question);let p=yesPrice(m);if(!d||!Number.isFinite(p))continue;let k=signature(m.question);if(k.length<8)continue;(groups[k]??=[]).push({m,d,p})}
-let candidates=[],pc=0;for(let g of Object.values(groups)){if(g.length<2)continue;g.sort((a,b)=>a.d-b.d);for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){pc++;let gap=g[i].p-g[j].p;if(gap>.005)candidates.push({a:g[i],b:g[j],gap,risk:ruleRisk(g[i].m,g[j].m),liq:Math.min(+(g[i].m.liquidity||0),+(g[j].m.liquidity||0)),exec:(Number.isFinite(+g[i].m.bestBid)&&Number.isFinite(+g[j].m.bestAsk))?((+g[i].m.bestBid)-(+g[j].m.bestAsk)):null})}}
-document.querySelector('#pairs').textContent=pc;document.querySelector('#flags').textContent=candidates.length;document.querySelector('#execflags').textContent=candidates.filter(x=>x.exec!==null&&x.exec>0&&x.liq>=1000&&x.risk==="similar wording").length;candidates.sort((a,b)=>(b.exec??-999)-(a.exec??-999)||b.gap-a.gap);
-let out=document.querySelector('#out');out.innerHTML=candidates.length?candidates.slice(0,30).map(x=>`<tr><td>${esc(x.a.m.question)}</td><td>${esc(x.b.m.question)}</td><td>${(x.a.p*100).toFixed(1)}% → ${(x.b.p*100).toFixed(1)}%</td><td class="edge">+${(x.gap*100).toFixed(1)} pp</td><td>${x.exec===null?"quote unavailable":((x.exec>0?"+":"")+(x.exec*100).toFixed(1)+" pp")}</td><td>${Number.isFinite(x.liq)?"$"+Math.round(x.liq).toLocaleString():"n/a"}</td><td class="warn">${esc(x.risk)}</td></tr>`).join(''):'<tr><td colspan="7" class="sub">No monotonicity violations found in this snapshot.</td></tr>';st.textContent='Scan complete from server snapshot '+(snap.generated_at||'')+'. Candidates require execution verification.';
-}catch(e){st.textContent='Snapshot load failed: '+e.message+'.'}finally{b.disabled=false}}
-function esc(s){return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}document.querySelector('#scan').onclick=run;
+const API='./data/results.json';
+const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pct=x=>x==null?'n/a':((x>0?'+':'')+(x*100).toFixed(2)+' pp');
+async function run(){
+ const b=document.querySelector('#scan'),st=document.querySelector('#status'); b.disabled=true; st.textContent='Loading latest server scan…';
+ try{
+  const r=await fetch(API+'?t='+Date.now()); if(!r.ok) throw Error('HTTP '+r.status); const s=await r.json();
+  if(s.status!=='ok') throw Error(s.error||'scanner error');
+  document.querySelector('#markets').textContent=s.market_count||0;
+  document.querySelector('#pairs').textContent=s.candidate_pairs||0;
+  document.querySelector('#flags').textContent=s.logical_flags||0;
+  document.querySelector('#execflags').textContent=s.qualified_paper_candidates||0;
+  const xs=s.candidates||[],out=document.querySelector('#out');
+  out.innerHTML=xs.length?xs.slice(0,30).map(x=>`<tr><td>${esc(x.earlier.question)}</td><td>${esc(x.later.question)}</td><td>${(x.earlier.yes*100).toFixed(1)}% → ${(x.later.yes*100).toFixed(1)}%</td><td class="edge">${pct(x.raw_gap)}</td><td class="${x.qualified_paper?'edge':''}">${pct(x.executable_gap)}</td><td>$${Math.round(x.min_liquidity||0).toLocaleString()}</td><td class="warn">${x.rule_similarity==null?'rules unavailable':Math.round(x.rule_similarity*100)+'% wording match'}</td></tr>`).join(''):'<tr><td colspan="7" class="sub">No monotonicity violations in latest snapshot.</td></tr>';
+  st.textContent='Server scan: '+new Date(s.generated_at).toLocaleString()+'. Paper candidates only.';
+ }catch(e){st.textContent='Scan unavailable: '+e.message;}finally{b.disabled=false}
+}
+document.querySelector('#scan').onclick=run; run();
 </script></body></html>
