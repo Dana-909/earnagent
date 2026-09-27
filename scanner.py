@@ -66,7 +66,9 @@ ops.sort(key=lambda x:(x["execution_eligible"],x["score"],x["reward_usd"]),rever
 # It autonomously scouts and ranks only; execution is enabled only for tasks whose requirements can be verified programmatically.
 eligible=[x for x in ops if x.get("execution_eligible")]
 target_value=sum(x.get("reward_usd",0) for x in eligible[:5])
-payload={"generated_at":NOW.isoformat(),"daily_target_usd":{"min":DAILY_TARGET_MIN,"max":DAILY_TARGET_MAX},"eligible_pipeline_value_usd":target_value,"status":"ok" if not errors else "partial","opportunities_found":len(ops),
+eligible.sort(key=lambda x:(x.get("score",0),x.get("reward_usd",0)),reverse=True)
+quality_summary={"eligible":len(eligible),"rejected":len(ops)-len(eligible),"top_eligible":[{"title":x["title"],"reward_usd":x["reward_usd"],"url":x["url"],"score":x["score"]} for x in eligible[:5]]}
+payload={"generated_at":NOW.isoformat(),"daily_target_usd":{"min":DAILY_TARGET_MIN,"max":DAILY_TARGET_MAX},"eligible_pipeline_value_usd":target_value,"quality_summary":quality_summary,"status":"ok" if not errors else "partial","opportunities_found":len(ops),
  "autonomously_completed":0,"verified_revenue_usd":0,"errors":errors,"opportunities":ops[:50],
  "execution_status":"quality_gated_scouting","quality_policy":{"rule":"Target $50-$100/day only through verified, high-quality work; never lower the quality bar to hit the target.","requirements":["requirements parsed","deliverable testable","no owner-only action","digital execution","not stale or already paid","no upfront spend","verification ready","verification before submission"]},"note":"No revenue is counted until an external source confirms payment."}
 os.makedirs("data",exist_ok=True)
