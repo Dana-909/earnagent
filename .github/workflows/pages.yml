@@ -21,6 +21,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run autonomous earning scout
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 scanner.py
       - uses: actions/configure-pages@v5
         with:
