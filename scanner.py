@@ -17,7 +17,9 @@ def quality_gate(x):
  checks={"clear_deliverable":bool(re.search(r"\\b(fix|implement|add|write|document|translate|test|create|update)\\b",t)),
          "has_reward":bool(x.get("reward_usd") and x["reward_usd"]>0),
          "no_owner_action":not bool(re.search(r"\\b(kyc|identity verification|phone call|onsite|purchase|deposit|subscription|account required)\\b",t)),
-         "digital":not bool(re.search(r"\\b(ship|delivery|physical|in person|on-site)\\b",t))}
+         "digital":not bool(re.search(r"\\b(ship|delivery|physical|in person|on-site)\\b",t)),
+         "not_stale":not bool(re.search(r"archived duplicate|historical snapshot|already paid|waiting_sponsor|unavailable|do not claim",t,re.I)),
+         "no_upfront_spend":not bool(re.search(r"claim bond|entry bond|deposit|fund .*bounty|pay .*fee|hosted proof.*cost",t,re.I))}
  return checks, all(checks.values())
 
 def score(x):
@@ -26,7 +28,7 @@ def score(x):
  t=(x.get("title","")+" "+x.get("body","")).lower()
  for k in ("documentation","docs","readme","translation","python","javascript","data","test"): 
   if k in t:s+=4
- for k in ("design","onsite","phone","physical","kyc","deposit","pay to","purchase"):
+ for k in ("design","onsite","phone","physical","kyc","deposit","pay to","purchase","archived duplicate","waiting_sponsor","unavailable","verification-unavailable","signup","register","claim bond","entry bond"):
   if k in t:s-=12
  return round(s,1)
 ops=[]; errors=[]
@@ -48,7 +50,7 @@ ops.sort(key=lambda x:(x["score"],x["reward_usd"]),reverse=True)
 # It autonomously scouts and ranks only; execution is enabled only for tasks whose requirements can be verified programmatically.
 payload={"generated_at":NOW.isoformat(),"status":"ok" if not errors else "partial","opportunities_found":len(ops),
  "autonomously_completed":0,"verified_revenue_usd":0,"errors":errors,"opportunities":ops[:50],
- "execution_status":"quality_gated_scouting","quality_policy":{"rule":"Never submit low-confidence work merely to maximize task count.","requirements":["requirements parsed","deliverable testable","no owner-only action","digital execution","verification before submission"]},"note":"No revenue is counted until an external source confirms payment."}
+ "execution_status":"quality_gated_scouting","quality_policy":{"rule":"Never submit low-confidence work merely to maximize task count.","requirements":["requirements parsed","deliverable testable","no owner-only action","digital execution","not stale or already paid","no upfront spend","verification before submission"]},"note":"No revenue is counted until an external source confirms payment."}
 os.makedirs("data",exist_ok=True)
 with open("data/earnagent.json","w",encoding="utf-8") as f:json.dump(payload,f,ensure_ascii=False,separators=(",",":"))
 print(json.dumps({k:payload[k] for k in ("status","opportunities_found","autonomously_completed","verified_revenue_usd")}))
