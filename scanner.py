@@ -8,7 +8,10 @@ SOURCES=[
  ("github_reward","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+reward+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
 ]
 def fetch(url):
- req=urllib.request.Request(url,headers={"User-Agent":"EarnAgent/1.0","Accept":"application/vnd.github+json"})
+ headers={"User-Agent":"EarnAgent/1.0","Accept":"application/vnd.github+json"}
+ token=os.getenv("GITHUB_TOKEN")
+ if token and "api.github.com" in url: headers["Authorization"]="Bearer "+token
+ req=urllib.request.Request(url,headers=headers)
  with urllib.request.urlopen(req,timeout=30) as r:return json.load(r)
 def money(text):
  vals=[]
