@@ -7,7 +7,7 @@ WITHDRAWAL_ADDRESS=os.getenv("EARNAGENT_WITHDRAWAL_ADDRESS","0x0dE69041d6bc1C137
 SOURCES=[
  ("agent_bounties","https://api.agentbounties.app/v1/base/autonomous-bounties/feed?network=base-mainnet&claimable_only=true"),
  ("bountybook","https://api.bountybook.ai/jobs?status=open&limit=50"), # canonical API host from provider docs/examples
- ("taskmarket","https://api.taskmarket.dev/api/tasks?status=open&mode=claim"), # priority: exclusive claim-mode, funded Base USDC work
+ ("taskmarket","https://api.taskmarket.dev/api/tasks?status=open"), # priority: exclusive claim-mode, funded Base USDC work
  ("basedagents","https://api.basedagents.ai/v1/tasks?status=open"),
  # Agent-native marketplaces are preferred because they expose explicit claim/submit lifecycles.
  # Write actions stay disabled until provider authentication, automation terms and payout are configured.
