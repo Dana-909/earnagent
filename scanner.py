@@ -84,6 +84,10 @@ for name,url in SOURCES:
   elif name=="bounty_agent":
    # Never treat an authenticated provider as healthy/usable until credentials exist.
    rows=data.get("bounties",data.get("items",data if isinstance(data,list) else []))
+  elif name=="basedagents":
+   rows=data.get("tasks",data.get("items",data if isinstance(data,list) else []))
+   # Only escrow-funded, claimable Base/USDC work may enter the execution pipeline.
+   rows=[r for r in rows if isinstance(r,dict) and r.get("claimable") is True and (r.get("escrow") or {}).get("status")=="funded" and ((r.get("bounty") or {}).get("token") in (None,"USDC")) and ((r.get("bounty") or {}).get("network") in (None,"eip155:8453"))]
   else: rows=data.get("items",[])
   for i in rows:
    if i.get("pull_request"): continue
