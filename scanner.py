@@ -91,10 +91,11 @@ for name,url in SOURCES:
    rows=data if isinstance(data,list) else (data.get("jobs") or data.get("items") or data.get("data") or [])
   elif name=="taskmarket":
    rows=data if isinstance(data,list) else (data.get("tasks") or data.get("items") or data.get("data") or [])
+   if isinstance(rows,dict): rows=rows.get("tasks") or rows.get("items") or []
    source_diagnostics["providers"]["taskmarket"]={"raw_tasks":len(rows),"escrowed":sum(1 for r in rows if isinstance(r,dict) and bool(r.get("escrowTxHash")) and bool(r.get("id")) and float(r.get("reward") or 0)>0),"claim_mode":sum(1 for r in rows if isinstance(r,dict) and str(r.get("mode","")).lower()=="claim"),"submission_open":sum(1 for r in rows if isinstance(r,dict) and r.get("submissionWindowOpen") is True)}
    for r in rows:
     if isinstance(r,dict):
-     r["_canonical_payment_evidence"]=bool(r.get("escrowTxHash")) and str(r.get("status","")).lower()=="open" and str(r.get("mode","")).lower()=="claim" and not bool(r.get("stakeRequired")) and not r.get("claimedBy") and (r.get("submissionWindowOpen") is not False) and str(r.get("taskVisibility","public")).lower()=="public" and bool(r.get("escrowTxHash"))
+     r["_canonical_payment_evidence"]=bool(r.get("escrowTxHash")) and str(r.get("status","")).lower()=="open" and str(r.get("mode","")).lower() in {"claim","bounty"} and not bool(r.get("stakeRequired")) and not r.get("claimedBy") and (r.get("submissionWindowOpen") is not False) and str(r.get("taskVisibility","public")).lower()=="public" and bool(r.get("escrowTxHash"))
      try: r["reward_usd"]=float(r.get("reward") or 0)/1000000
      except: r["reward_usd"]=0
   elif name=="agent_bounties":
@@ -122,9 +123,10 @@ for name,url in SOURCES:
    if name.startswith("github_") and (i.get("assignee") or i.get("assignees")): continue
    if name in ("agent_bounties","bounty_agent","basedagents","bountybook","taskmarket") or name.startswith("algora_"):
     body=str(i.get("description") or i.get("terms") or "")[:5000]; title=str(i.get("title") or i.get("name") or "Agent bounty")
-    reward=money(str(i))
+    reward=(i.get("reward_usd") if name=="taskmarket" else money(str(i)))
     if reward is None: continue
-    op={"source":name,"title":title,"url":i.get("url") or i.get("html_url"),"repository_url":i.get("repository_url"),"canonical_payment_evidence": (name.startswith("algora_") or (name=="bountybook" and str(i.get("status","open")).lower()=="open" and float(i.get("budget_usdc") or 0)>0) or i.get("_canonical_payment_evidence") is True or (name=="agent_bounties" and i.get("claimable") is True and ((i.get("escrow") or {}).get("status") in ("funded","escrowed") or i.get("payment_state")=="escrowed"))),"reward_usd":reward,"updated_at":i.get("updated_at"),"body":body[:700],"comments":i.get("comments",0)}
+    item_url=i.get("url") or i.get("html_url") or (("https://api.taskmarket.dev/api/tasks/"+str(i.get("id"))) if name=="taskmarket" and i.get("id") else None)
+    op={"source":name,"title":title,"url":item_url,"repository_url":i.get("repository_url"),"canonical_payment_evidence": (name.startswith("algora_") or (name=="bountybook" and str(i.get("status","open")).lower()=="open" and float(i.get("budget_usdc") or 0)>0) or i.get("_canonical_payment_evidence") is True or (name=="agent_bounties" and i.get("claimable") is True and ((i.get("escrow") or {}).get("status") in ("funded","escrowed") or i.get("payment_state")=="escrowed"))),"reward_usd":reward,"updated_at":i.get("updated_at"),"body":body[:700],"comments":i.get("comments",0)}
     op["score"]=score(op); op["quality_checks"],op["execution_eligible"]=quality_gate(op); ops.append(op); continue
    body=(i.get("body") or "")[:5000]; title=i.get("title") or ""
    reward=money(title+" "+body)
