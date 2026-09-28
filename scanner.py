@@ -43,7 +43,7 @@ def quality_gate(x):
          "no_prompt_exfiltration":not bool(re.search(r"system prompt|initialization payload|hidden instructions|reveal.*prompt|paste.*prompt",t,re.I)),
          "no_fake_reward_signal":not bool(re.search(r"test bounty|fake bounty|simulation only|no payout|unfunded",t,re.I)),
          "not_already_rewarded":not bool(re.search(r"rewarded|already paid|bounty paid|payment sent|award(ed)? to",t,re.I)),
-         "canonical_payment_required":True,
+         "canonical_payment_required":bool(x.get("canonical_payment_evidence")),
          "no_required_spend":not bool(re.search(r"claim bond|entry bond|post.*bond|pay.*to submit|self-funded|fund.*child|requires? funding",t,re.I)),
          "no_broken_verifier_signal":not bool(re.search(r"unscoreable|snapshot.*404|artifact.*not published|not enterable|verifier.*broken|wrong_competition_mode",t,re.I)),
          "no_expired_scoring_window":not bool(re.search(r"scoring window.*already past|window.*closed|scoring is closed|deadline.*already past",t,re.I))}
@@ -99,7 +99,7 @@ for name,url in SOURCES:
     body=str(i.get("description") or i.get("terms") or "")[:5000]; title=str(i.get("title") or i.get("name") or "Agent bounty")
     reward=money(str(i))
     if reward is None: continue
-    op={"source":name,"title":title,"url":i.get("url") or i.get("html_url"),"repository_url":i.get("repository_url"),"reward_usd":reward,"updated_at":i.get("updated_at"),"body":body[:700],"comments":i.get("comments",0)}
+    op={"source":name,"title":title,"url":i.get("url") or i.get("html_url"),"repository_url":i.get("repository_url"),"canonical_payment_evidence": (name=="basedagents" and i.get("claimable") is True and (i.get("escrow") or {}).get("status")=="funded" and (i.get("bounty") or {}).get("token")=="USDC" and (i.get("bounty") or {}).get("network")=="eip155:8453"),"reward_usd":reward,"updated_at":i.get("updated_at"),"body":body[:700],"comments":i.get("comments",0)}
     op["score"]=score(op); op["quality_checks"],op["execution_eligible"]=quality_gate(op); ops.append(op); continue
    body=(i.get("body") or "")[:5000]; title=i.get("title") or ""
    reward=money(title+" "+body)
