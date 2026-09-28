@@ -33,6 +33,7 @@ jobs:
           else
             taskmarket wallet import
             unset TASKMARKET_IMPORT_KEY
+            echo "Taskmarket wallet imported into encrypted keystore."
             taskmarket address
             taskmarket identity status
             taskmarket legal status
@@ -45,6 +46,8 @@ jobs:
           import json
           d=json.load(open("taskmarket_live.json"))
           rows=d.get("data", d) if isinstance(d,dict) else d
+          if isinstance(rows,dict):
+              rows=rows.get("tasks") or rows.get("items") or []
           rows=rows if isinstance(rows,list) else []
           modes={}
           for t in rows:
