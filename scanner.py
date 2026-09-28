@@ -50,10 +50,14 @@ for name,url in SOURCES:
   data=fetch(url)
   if name=="agent_bounties":
    rows=data.get("bounties",data.get("items",data if isinstance(data,list) else []))
+  elif name=="bounty_agent":
+   # Never treat an authenticated provider as healthy/usable until credentials exist.
+   if not os.getenv("BOUNTY_AGENT_API_KEY"): raise RuntimeError("provider_not_configured")
+   rows=data.get("bounties",data.get("items",data if isinstance(data,list) else []))
   else: rows=data.get("items",[])
   for i in rows:
    if i.get("pull_request"): continue
-   if name=="agent_bounties":
+   if name in ("agent_bounties","bounty_agent"):
     body=str(i.get("description") or i.get("terms") or "")[:5000]; title=str(i.get("title") or i.get("name") or "Agent bounty")
     reward=money(str(i))
     if reward is None: continue
@@ -87,6 +91,9 @@ search_mode="expand_sources" if target_value<DAILY_TARGET_MIN else ("build_reser
 submission_guard={"allowed":ready_for_paid_execution,"reason":"all_readiness_layers_green" if ready_for_paid_execution else "blocked_until_payout_execution_and_submission_are_verified"}
 eligible.sort(key=lambda x:(x.get("score",0),x.get("reward_usd",0)),reverse=True)
 payout_ready=[x for x in eligible if x.get("source")=="agent_bounties"]
+# Authenticated Bounty Agent tasks remain discovery-only until owner credentials and payout route are configured.
+for x in eligible:
+ if x.get("source")=="bounty_agent": x["claim_allowed"]=False; x["claim_blocker"]="provider_credentials_and_payout_not_configured"
 quality_summary={"eligible":len(eligible),"rejected":len(ops)-len(eligible),"top_eligible":[{"title":x["title"],"reward_usd":x["reward_usd"],"url":x["url"],"score":x["score"]} for x in eligible[:5]]}
 payload={"generated_at":NOW.isoformat(),"daily_target_usd":{"min":DAILY_TARGET_MIN,"max":DAILY_TARGET_MAX},"eligible_pipeline_value_usd":target_value,"profit_analytics":{"verified_revenue_usd":0,"forecast_status":"insufficient_payment_history","forecast_method":"empirical_only","windows_days":[7,30],"minimum_outcomes_for_forecast":20,"metrics":["acceptance_rate","payment_rate","verified_usd_per_attempt","verified_usd_per_day"],"rule":"Never estimate acceptance or payout rates without observed outcomes"},"security_policy":security_policy,"source_health":source_health,"system_health":health,"ready_for_paid_execution":ready_for_paid_execution,"submission_guard":submission_guard,"daily_target_controller":{"coverage_ratio":coverage_ratio,"mode":search_mode,"minimum_pipeline_usd":DAILY_TARGET_MIN,"stretch_pipeline_usd":DAILY_TARGET_MAX},"quality_summary":quality_summary,"payout_control":{"configured":False,"safe_mode":True,"rule":"Do not claim or submit payable work until a compatible payout destination is configured.","payout_ready_candidates":len(payout_ready)},"status":"ok" if not errors else "partial","opportunities_found":len(ops),
  "autonomously_completed":0,"verified_revenue_usd":0,"errors":errors,"opportunities":ops[:50],
