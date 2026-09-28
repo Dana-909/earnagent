@@ -33,16 +33,18 @@ def quality_gate(x):
          "digital":not bool(re.search(r"\\b(ship|delivery|physical|in person|on-site)\\b",t)),
          "not_stale":not bool(re.search(r"archived duplicate|historical snapshot|already paid|waiting_sponsor|unavailable|do not claim",t,re.I)),
          "no_upfront_spend":not bool(re.search(r"claim bond|entry bond|deposit|fund .*bounty|pay .*fee|hosted proof.*cost",t,re.I)),
-         "verification_ready":not bool(re.search(r"verification-unavailable|recovery-reserved|quarantined|do not claim|funding-pending|not funded",t,re.I))}
+         "verification_ready":not bool(re.search(r"verification-unavailable|recovery-reserved|quarantined|do not claim|funding-pending|not funded",t,re.I)),
+         "no_human_approval_gate":not bool(re.search(r"wait for maintainer approval|maintainer must confirm|do not start work until|sign up as a developer",t,re.I)),
+         "not_saturated":int(x.get("comments") or 0)<100}
  return checks, all(checks.values())
 
 def score(x):
  s=0
  comments=int(x.get("comments") or 0)
  # Competition penalty: avoid spending effort on saturated bounties.
- if comments>=100: s-=40
- elif comments>=25: s-=20
- elif comments>=10: s-=10
+ if comments>=100: s-=60
+ elif comments>=25: s-=30
+ elif comments>=10: s-=15
  elif comments<=3: s+=8
  if x.get("reward_usd"): s+=min(60,x["reward_usd"]/10)
  t=(x.get("title","")+" "+x.get("body","")).lower()
