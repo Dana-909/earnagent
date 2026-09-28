@@ -4,7 +4,7 @@ NOW=datetime.datetime.now(datetime.timezone.utc)
 DAILY_TARGET_MIN=50
 DAILY_TARGET_MAX=100
 SOURCES=[
- ("agent_bounties","https://api.agentbounties.app/v1/base/autonomous-bounties/feed?network=base-mainnet&claimable_only=true&view=ready_to_earn&source_type=canonical_base&work_state=claimable&payment_state=escrowed"),
+ ("agent_bounties","https://api.agentbounties.app/v1/base/autonomous-bounties/feed?network=base-mainnet&claimable_only=true"),
  ("basedagents","https://api.basedagents.ai/v1/tasks?status=open"),
  # Agent-native marketplaces are preferred because they expose explicit claim/submit lifecycles.
  # Write actions stay disabled until provider authentication, automation terms and payout are configured.
