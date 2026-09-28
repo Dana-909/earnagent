@@ -37,7 +37,10 @@ def quality_gate(x):
          "verification_ready":not bool(re.search(r"verification-unavailable|recovery-reserved|quarantined|do not claim|funding-pending|not funded",t,re.I)),
          "no_human_approval_gate":not bool(re.search(r"wait for maintainer approval|maintainer must confirm|do not start work until|sign up as a developer",t,re.I)),
          "not_saturated":int(x.get("comments") or 0)<100,
-         "fresh_enough":not bool(re.search(r"stale|deprecated|deactivated|no longer valid|wound down",t,re.I))}
+         "fresh_enough":not bool(re.search(r"stale|deprecated|deactivated|no longer valid|wound down",t,re.I)),
+         # Never trust a bounty-label alone as proof of funding/provider legitimacy.
+         "no_prompt_exfiltration":not bool(re.search(r"system prompt|initialization payload|hidden instructions|reveal.*prompt|paste.*prompt",t,re.I)),
+         "no_fake_reward_signal":not bool(re.search(r"test bounty|fake bounty|simulation only|no payout|unfunded",t,re.I))}
  return checks, all(checks.values())
 
 def score(x):
