@@ -20,6 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Run safety tests
+        run: python3 -m unittest -v test_worker.py test_verifier.py
       - name: Run autonomous earning scout
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
