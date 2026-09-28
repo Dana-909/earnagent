@@ -5,7 +5,8 @@ DAILY_TARGET_MIN=50
 DAILY_TARGET_MAX=100
 SOURCES=[
  ("agent_bounties","https://api.agentbounties.app/v1/base/autonomous-bounties/feed?network=base-mainnet&claimable_only=true"),
- ("bountybook","https://www.bountybook.ai/jobs?status=open&limit=50"), # documented public Base/USDC jobs endpoint
+ ("bountybook","https://api.bountybook.ai/jobs?status=open&limit=50"), # canonical API host from provider docs/examples
+ ("taskmarket","https://taskmarket.dev/api/tasks?status=open"), # funded USDC task market; fail-closed until schema/payment evidence verifies
  ("basedagents","https://api.basedagents.ai/v1/tasks?status=open"),
  # Agent-native marketplaces are preferred because they expose explicit claim/submit lifecycles.
  # Write actions stay disabled until provider authentication, automation terms and payout are configured.
