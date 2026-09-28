@@ -11,6 +11,8 @@ SOURCES=[
  ("bounty_agent","https://api.trybounty.ai/v1/agent/bounties"), # requires BOUNTY_AGENT_API_KEY; unauthenticated failures are expected until owner setup
  ("algora_projectdiscovery","https://api.algora.io/api/orgs/projectdiscovery/bounties?status=active"),
  ("algora_highlight","https://api.algora.io/api/orgs/highlight/bounties?status=active"),
+ ("algora_cometml","https://api.algora.io/api/orgs/comet-ml/bounties?status=active"),
+ ("algora_coollabsio","https://api.algora.io/api/orgs/coollabsio/bounties?status=active"),
  ("algora_cal","https://api.algora.io/api/orgs/cal/bounties?status=active"),
  ("algora_revertinc","https://api.algora.io/api/orgs/revertinc/bounties?status=active"),
  ("algora_calcom","https://api.algora.io/api/orgs/calcom/bounties?status=active"),
