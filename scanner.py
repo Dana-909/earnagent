@@ -45,7 +45,8 @@ def quality_gate(x):
          "not_already_rewarded":not bool(re.search(r"rewarded|already paid|bounty paid|payment sent|award(ed)? to",t,re.I)),
          "canonical_payment_required":True,
          "no_required_spend":not bool(re.search(r"claim bond|entry bond|post.*bond|pay.*to submit|self-funded|fund.*child|requires? funding",t,re.I)),
-         "no_broken_verifier_signal":not bool(re.search(r"unscoreable|snapshot.*404|artifact.*not published|not enterable|verifier.*broken|wrong_competition_mode",t,re.I))}
+         "no_broken_verifier_signal":not bool(re.search(r"unscoreable|snapshot.*404|artifact.*not published|not enterable|verifier.*broken|wrong_competition_mode",t,re.I)),
+         "no_expired_scoring_window":not bool(re.search(r"scoring window.*already past|window.*closed|scoring is closed|deadline.*already past",t,re.I))}
  return checks, all(checks.values())
 
 def score(x):
