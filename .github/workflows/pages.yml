@@ -79,6 +79,62 @@ jobs:
           json.dump({"safe_free_submit_candidates":safe},open("taskmarket_preflight.json","w"),separators=(",",":"))
           print({"safe_free_submit_candidates":len(safe),"refs":[x["referenceCode"] for x in safe]})
           PY
+      - name: Validate and submit verified pupil-atlas bounty
+        env:
+          TASK_ID: 0x1d63afca637422566509350819d66be837192535849240bed49104258cd45a49
+          AGENT_ADDRESS: 0x948B78F80ba73E846B27171f31E3609b0e399701
+          DELIVERABLE: deliverables/natures_strange_eyes.svg
+        run: |
+          python3 - <<'PY'
+          import os,re,xml.etree.ElementTree as ET
+          p=os.environ["DELIVERABLE"]; raw=open(p,"rb").read(); text=raw.decode()
+          assert len(raw)<=500000
+          ET.fromstring(text)
+          assert text.count('id="entry-')==5
+          assert all(x in text for x in ["Felis catus","Capra hircus","Equus caballus","Panthera tigris","Sepia bandensis"])
+          assert "SCHEMATIC CAVEAT" in text and "<title" in text and "<desc" in text
+          assert "<script" not in text.lower() and "<foreignObject" not in text
+          assert len(re.findall(r'https://',text))>=5
+          print({"svg_valid":True,"bytes":len(raw),"entries":5})
+          PY
+          taskmarket task get "$TASK_ID" > task_pre_submit.json
+          python3 - <<'PY'
+          import json,os,sys
+          d=json.load(open("task_pre_submit.json")); x=d.get("data") or {}
+          acts=x.get("pendingActions") or []
+          ok=any(a.get("role")=="worker" and a.get("action")=="submit" and not a.get("requiresPayment") and (not a.get("eligibleAddress") or a.get("eligibleAddress","").lower()==os.environ["AGENT_ADDRESS"].lower()) for a in acts)
+          if not (ok and x.get("submissionWindowOpen") is True):
+              print("Submission gate closed or paid; skipping safely."); sys.exit(20)
+          PY
+          taskmarket task submissions "$TASK_ID" > existing_submissions.json
+          if python3 - <<'PY'
+          import json,os,sys
+          d=json.load(open("existing_submissions.json")); rows=d.get("data") or []
+          found=any((r.get("workerAddress") or "").lower()==os.environ["AGENT_ADDRESS"].lower() for r in rows)
+          print({"already_submitted_by_agent":found})
+          sys.exit(0 if found else 1)
+          PY
+          then
+            echo "Existing EarnAgent submission found; no duplicate."
+          else
+            taskmarket task get "$TASK_ID" > task_final_gate.json
+            python3 - <<'PY'
+          import json,os
+          x=(json.load(open("task_final_gate.json")).get("data") or {})
+          acts=x.get("pendingActions") or []
+          assert x.get("submissionWindowOpen") is True
+          assert any(a.get("role")=="worker" and a.get("action")=="submit" and not a.get("requiresPayment") and (not a.get("eligibleAddress") or a.get("eligibleAddress","").lower()==os.environ["AGENT_ADDRESS"].lower()) for a in acts)
+          PY
+            taskmarket task submit "$TASK_ID" --file "$DELIVERABLE" | tee taskmarket_submission.json
+            taskmarket task submissions "$TASK_ID" > submissions_after.json
+            python3 - <<'PY'
+          import json,os
+          rows=json.load(open("submissions_after.json")).get("data") or []
+          mine=[r for r in rows if (r.get("workerAddress") or "").lower()==os.environ["AGENT_ADDRESS"].lower()]
+          assert mine, "submission not confirmed"
+          print({"submission_confirmed":True,"submission_id":mine[-1].get("id")})
+          PY
+          fi
       - name: Run safety tests
         run: python3 -m unittest -v test_worker.py test_verifier.py test_submitter.py test_ledger.py test_runner.py
       - name: Validate end-to-end safety orchestration
