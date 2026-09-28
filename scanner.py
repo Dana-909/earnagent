@@ -17,7 +17,7 @@ SOURCES=[
  ("algora_revertinc","https://api.algora.io/api/orgs/revertinc/bounties?status=open"),
  ("algora_calcom","https://api.algora.io/api/orgs/calcom/bounties?status=open"),
  ("algora_activepieces","https://api.algora.io/api/orgs/activepieces/bounties?status=open"),
- ("github_algora","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+label%3A%22%F0%9F%92%8E+Bounty%22&sort=updated&order=desc&per_page=100"), # discovery only; label is not payment proof
+ ("github_algora","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+label%3A%22%F0%9F%92%8E+Bounty%22+-repo%3AClankerNation%2FOpenAgents+-repo%3AUnsafeLabs%2FBounty-Hunters&sort=updated&order=desc&per_page=100"), # discovery only; exclude empirically malicious bounty farms
  ("github_bounty","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+bounty+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
  ("github_reward","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+reward+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
 ]
