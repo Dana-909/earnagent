@@ -99,7 +99,7 @@ for name,url in SOURCES:
     body=str(i.get("description") or i.get("terms") or "")[:5000]; title=str(i.get("title") or i.get("name") or "Agent bounty")
     reward=money(str(i))
     if reward is None: continue
-    op={"source":name,"title":title,"url":i.get("url") or i.get("html_url"),"repository_url":i.get("repository_url"),"canonical_payment_evidence": (name=="basedagents" and i.get("claimable") is True and (i.get("escrow") or {}).get("status")=="funded" and (i.get("bounty") or {}).get("token")=="USDC" and (i.get("bounty") or {}).get("network")=="eip155:8453"),"reward_usd":reward,"updated_at":i.get("updated_at"),"body":body[:700],"comments":i.get("comments",0)}
+    op={"source":name,"title":title,"url":i.get("url") or i.get("html_url"),"repository_url":i.get("repository_url"),"canonical_payment_evidence": ((name=="basedagents" and i.get("claimable") is True and (i.get("escrow") or {}).get("status")=="funded" and (i.get("bounty") or {}).get("token")=="USDC" and (i.get("bounty") or {}).get("network")=="eip155:8453") or (name=="agent_bounties" and i.get("claimable") is True and ((i.get("escrow") or {}).get("status") in ("funded","escrowed") or i.get("payment_state")=="escrowed"))),"reward_usd":reward,"updated_at":i.get("updated_at"),"body":body[:700],"comments":i.get("comments",0)}
     op["score"]=score(op); op["quality_checks"],op["execution_eligible"]=quality_gate(op); ops.append(op); continue
    body=(i.get("body") or "")[:5000]; title=i.get("title") or ""
    reward=money(title+" "+body)
