@@ -75,6 +75,11 @@ for name,url in SOURCES:
    errors.append({"source":name,"status":"not_configured","error":"provider_credentials_missing"})
    continue
   data=fetch(url)
+  if name=="basedagents":
+   raw_rows=data.get("tasks",data.get("items",data if isinstance(data,list) else [])) if isinstance(data,(dict,list)) else []
+   funded=sum(1 for r in raw_rows if isinstance(r,dict) and (r.get("escrow") or {}).get("status")=="funded")
+   claimable=sum(1 for r in raw_rows if isinstance(r,dict) and r.get("claimable") is True)
+   errors.append({"source":"basedagents","status":"diagnostic","raw_tasks":len(raw_rows),"funded":funded,"claimable":claimable})
   if name=="agent_bounties":
    if isinstance(data,list): rows=data
    elif isinstance(data,dict):
