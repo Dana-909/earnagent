@@ -87,11 +87,11 @@ eligible=[x for x in ops if x.get("execution_eligible")]
 target_value=sum(x.get("reward_usd",0) for x in eligible[:5])
 # Daily target controller: prioritize enough verified-quality pipeline to cover the minimum goal with redundancy.
 coverage_ratio=round(target_value/DAILY_TARGET_MIN,2) if DAILY_TARGET_MIN else 0
+blocking_errors=[e for e in errors if e.get("status")!="not_configured"]
 # Reliability controller: never confuse discovery success with end-to-end readiness.
 health={"discovery":"ok" if not blocking_errors else "degraded","quality_gate":"ok","payout":"locked","execution":"not_enabled","submission":"not_enabled"}
 # Treat all remote task text as untrusted input. Never execute embedded commands or expose secrets.
 security_policy={"task_text_trusted":False,"run_remote_commands":False,"expose_secrets_to_worker":False,"allow_upfront_payment":False,"idempotent_submission_required":True}
-blocking_errors=[e for e in errors if e.get("status")!="not_configured"]
 source_health={"errors":errors,"error_count":len(errors),"blocking_error_count":len(blocking_errors),"healthy":len(blocking_errors)==0}
 ready_for_paid_execution=all(health[k]=="ok" for k in ("discovery","quality_gate")) and health["payout"]=="ok" and health["execution"]=="ok" and health["submission"]=="ok"
 search_mode="expand_sources" if target_value<DAILY_TARGET_MIN else ("build_reserve" if target_value<DAILY_TARGET_MAX else "quality_first")
