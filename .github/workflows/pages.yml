@@ -27,6 +27,7 @@ jobs:
       - name: Run autonomous earning scout
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BOUNTY_AGENT_API_KEY: ${{ secrets.BOUNTY_AGENT_API_KEY }}
         run: python3 scanner.py
       - uses: actions/configure-pages@v5
         with:
