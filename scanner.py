@@ -79,7 +79,10 @@ for name,url in SOURCES:
   if name=="bounty_agent" and not os.getenv("BOUNTY_AGENT_API_KEY"):
    errors.append({"source":name,"status":"not_configured","error":"provider_credentials_missing"})
    continue
-  data=fetch(url)
+  if name=="taskmarket" and os.path.exists("taskmarket_live.json"):
+   with open("taskmarket_live.json","r",encoding="utf-8") as tf: data=json.load(tf)
+  else:
+   data=fetch(url)
   if name=="basedagents":
    raw_rows=data.get("tasks",data.get("items",data if isinstance(data,list) else [])) if isinstance(data,(dict,list)) else []
    funded=sum(1 for r in raw_rows if isinstance(r,dict) and (r.get("escrow") or {}).get("status")=="funded")
@@ -91,6 +94,7 @@ for name,url in SOURCES:
    rows=data if isinstance(data,list) else (data.get("jobs") or data.get("items") or data.get("data") or [])
   elif name=="taskmarket":
    rows=data if isinstance(data,list) else (data.get("tasks") or data.get("items") or data.get("data") or [])
+   if isinstance(rows,dict): rows=rows.get("tasks") or rows.get("items") or rows.get("data") or []
    if isinstance(rows,dict): rows=rows.get("tasks") or rows.get("items") or []
    source_diagnostics["providers"]["taskmarket"]={"raw_tasks":len(rows),"escrowed":sum(1 for r in rows if isinstance(r,dict) and bool(r.get("escrowTxHash")) and bool(r.get("id")) and float(r.get("reward") or 0)>0),"claim_mode":sum(1 for r in rows if isinstance(r,dict) and str(r.get("mode","")).lower()=="claim"),"submission_open":sum(1 for r in rows if isinstance(r,dict) and r.get("submissionWindowOpen") is True)}
    for r in rows:
