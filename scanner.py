@@ -93,7 +93,7 @@ for name,url in SOURCES:
    source_diagnostics["providers"]["taskmarket"]={"raw_tasks":len(rows),"escrowed":sum(1 for r in rows if isinstance(r,dict) and bool(r.get("escrowTxHash"))),"claim_mode":sum(1 for r in rows if isinstance(r,dict) and str(r.get("mode","")).lower()=="claim"),"submission_open":sum(1 for r in rows if isinstance(r,dict) and r.get("submissionWindowOpen") is True)}
    for r in rows:
     if isinstance(r,dict):
-     r["_canonical_payment_evidence"]=bool(r.get("escrowTxHash")) and str(r.get("status","")).lower()=="open" and str(r.get("mode","")).lower()=="claim"
+     r["_canonical_payment_evidence"]=bool(r.get("escrowTxHash")) and str(r.get("status","")).lower()=="open" and str(r.get("mode","")).lower()=="claim" and not bool(r.get("stakeRequired")) and not r.get("claimedBy")
      try: r["reward_usd"]=float(r.get("reward") or 0)/1000000
      except: r["reward_usd"]=0
   elif name=="agent_bounties":
