@@ -42,6 +42,7 @@ def quality_gate(x):
          "no_owner_action":not bool(re.search(r"\b(kyc|identity verification|phone call|onsite|purchase|deposit|subscription|account required)\b",t)),
          "digital":not bool(re.search(r"\b(ship|delivery|physical|in person|on-site)\b",t)),
          "not_stale":not bool(re.search(r"archived duplicate|historical snapshot|already paid|waiting_sponsor|unavailable|do not claim",t,re.I)),
+         "not_bounty_aggregator":not bool(re.search(r"bounty scout|bounty alert|active bounty scan results|high-value.*bounty discovery",t,re.I)),
          "no_upfront_spend":not bool(re.search(r"claim bond|entry bond|deposit|fund .*bounty|pay .*fee|hosted proof.*cost",t,re.I)),
          "verification_ready":not bool(re.search(r"verification-unavailable|recovery-reserved|quarantined|do not claim|funding-pending|not funded",t,re.I)),
          "no_human_approval_gate":not bool(re.search(r"wait for maintainer approval|maintainer must confirm|do not start work until|sign up as a developer",t,re.I)),
