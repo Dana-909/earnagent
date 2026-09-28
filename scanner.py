@@ -5,7 +5,7 @@ DAILY_TARGET_MIN=50
 DAILY_TARGET_MAX=100
 SOURCES=[
  ("agent_bounties","https://api.agentbounties.app/v1/base/autonomous-bounties/feed?network=base-mainnet&claimable_only=true&view=ready_to_earn&source_type=canonical_base&work_state=claimable&payment_state=escrowed"),
- ("basedagents","https://api.basedagents.ai/v1/tasks?status=open&min_usdc=1.00"),
+ ("basedagents","https://api.basedagents.ai/v1/tasks?status=open"),
  # Agent-native marketplaces are preferred because they expose explicit claim/submit lifecycles.
  # Write actions stay disabled until provider authentication, automation terms and payout are configured.
  ("bounty_agent","https://api.trybounty.ai/v1/agent/bounties"), # requires BOUNTY_AGENT_API_KEY; unauthenticated failures are expected until owner setup
@@ -87,7 +87,7 @@ for name,url in SOURCES:
   elif name=="basedagents":
    rows=data.get("tasks",data.get("items",data if isinstance(data,list) else []))
    # Only escrow-funded, claimable Base/USDC work may enter the execution pipeline.
-   rows=[r for r in rows if isinstance(r,dict) and r.get("claimable") is True and (r.get("escrow") or {}).get("status")=="funded" and (r.get("bounty") or {}).get("token")=="USDC" and (r.get("bounty") or {}).get("network")=="eip155:8453"]
+   rows=[r for r in rows if isinstance(r,dict) and r.get("claimable") is True and (r.get("escrow") or {}).get("status")=="funded" and (r.get("bounty") or {}).get("token")=="USDC" and (r.get("bounty") or {}).get("network")=="eip155:8453" and float((r.get("bounty") or {}).get("amount_display") or 0)>=1.0]
   else: rows=data.get("items",[])
   for i in rows:
    if i.get("pull_request"): continue
