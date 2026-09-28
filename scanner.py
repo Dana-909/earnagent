@@ -89,7 +89,7 @@ for name,url in SOURCES:
    claimable=sum(1 for r in raw_rows if isinstance(r,dict) and r.get("claimable") is True)
    source_diagnostics={"basedagents":{"raw_tasks":len(raw_rows),"funded":funded,"claimable":claimable}}
   if name.startswith("algora_"):
-   rows=data if isinstance(data,list) else (data.get("items") or data.get("bounties") or [])
+   rows=data if isinstance(data,list) else (data.get("items") or data.get("bounties") or data.get("data") or [])
   elif name=="agent_bounties":
    if isinstance(data,list): rows=data
    elif isinstance(data,dict):
