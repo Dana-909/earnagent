@@ -14,4 +14,11 @@ class WorkerTests(unittest.TestCase):
         c={"title":"Fix docs","body":"","eligible":True,"reward_usd":20,"url":"z"}
         self.assertIn("duplicate",make_plan(c,[fingerprint(c)])["blockers"])
 
+    def test_live_candidate_contract(self):
+        c={"title":"Documentation bounty $25","body":"Update README documentation","url":"https://example.invalid/1","reward_usd":25,"eligible":True}
+        p=make_plan(c)
+        self.assertEqual(p["state"],"planned")
+        self.assertEqual(p["kind"],"docs_edit")
+        self.assertEqual(p["submission"],"disabled_until_payout_and_submission_ready")
+
 if __name__=="__main__": unittest.main()
