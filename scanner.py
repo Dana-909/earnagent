@@ -9,15 +9,6 @@ SOURCES=[
  # Agent-native marketplaces are preferred because they expose explicit claim/submit lifecycles.
  # Write actions stay disabled until provider authentication, automation terms and payout are configured.
  ("bounty_agent","https://api.trybounty.ai/v1/agent/bounties"), # requires BOUNTY_AGENT_API_KEY; unauthenticated failures are expected until owner setup
- ("algora_projectdiscovery","https://api.algora.io/api/orgs/projectdiscovery/bounties?status=open"),
- ("algora_highlight","https://api.algora.io/api/orgs/highlight/bounties?status=open"),
- ("algora_cometml","https://api.algora.io/api/orgs/comet-ml/bounties?status=open"),
- ("algora_coollabsio","https://api.algora.io/api/orgs/coollabsio/bounties?status=open"),
- ("algora_cloudgakkai","https://api.algora.io/api/orgs/cloudgakkai/bounties?status=open"),
- ("algora_cal","https://api.algora.io/api/orgs/cal/bounties?status=open"),
- ("algora_revertinc","https://api.algora.io/api/orgs/revertinc/bounties?status=open"),
- ("algora_calcom","https://api.algora.io/api/orgs/calcom/bounties?status=open"),
- ("algora_activepieces","https://api.algora.io/api/orgs/activepieces/bounties?status=open"),
  ("github_algora","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+label%3A%22%F0%9F%92%8E+Bounty%22+-repo%3AClankerNation%2FOpenAgents+-repo%3AUnsafeLabs%2FBounty-Hunters&sort=updated&order=desc&per_page=100"), # discovery only; exclude empirically malicious bounty farms
  ("github_bounty","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+bounty+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
  ("github_reward","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+reward+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
