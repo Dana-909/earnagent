@@ -38,6 +38,12 @@ def quality_gate(x):
 
 def score(x):
  s=0
+ comments=int(x.get("comments") or 0)
+ # Competition penalty: avoid spending effort on saturated bounties.
+ if comments>=100: s-=40
+ elif comments>=25: s-=20
+ elif comments>=10: s-=10
+ elif comments<=3: s+=8
  if x.get("reward_usd"): s+=min(60,x["reward_usd"]/10)
  t=(x.get("title","")+" "+x.get("body","")).lower()
  for k in ("documentation","docs","readme","translation","python","javascript","data","test"): 
@@ -68,7 +74,7 @@ for name,url in SOURCES:
     body=str(i.get("description") or i.get("terms") or "")[:5000]; title=str(i.get("title") or i.get("name") or "Agent bounty")
     reward=money(str(i))
     if reward is None: continue
-    op={"source":name,"title":title,"url":i.get("url") or i.get("html_url"),"repository_url":i.get("repository_url"),"reward_usd":reward,"updated_at":i.get("updated_at"),"body":body[:700]}
+    op={"source":name,"title":title,"url":i.get("url") or i.get("html_url"),"repository_url":i.get("repository_url"),"reward_usd":reward,"updated_at":i.get("updated_at"),"body":body[:700],"comments":i.get("comments",0)}
     op["score"]=score(op); op["quality_checks"],op["execution_eligible"]=quality_gate(op); ops.append(op); continue
    body=(i.get("body") or "")[:5000]; title=i.get("title") or ""
    reward=money(title+" "+body)
