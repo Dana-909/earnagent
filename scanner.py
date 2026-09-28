@@ -5,6 +5,7 @@ DAILY_TARGET_MIN=50
 DAILY_TARGET_MAX=100
 SOURCES=[
  ("agent_bounties","https://api.agentbounties.app/v1/base/autonomous-bounties/feed?network=base-mainnet&claimable_only=true"),
+ ("bountybook","https://api.bountybook.ai/jobs?status=open"), # public Base/USDC agent job board; payment evidence still required
  ("basedagents","https://api.basedagents.ai/v1/tasks?status=open"),
  # Agent-native marketplaces are preferred because they expose explicit claim/submit lifecycles.
  # Write actions stay disabled until provider authentication, automation terms and payout are configured.
@@ -84,7 +85,9 @@ for name,url in SOURCES:
    source_diagnostics={"basedagents":{"raw_tasks":len(raw_rows),"funded":funded,"claimable":claimable}}
   if name.startswith("algora_"):
    rows=data if isinstance(data,list) else (data.get("items") or data.get("bounties") or data.get("data") or [])
-  elif name=="agent_bounties":
+  elif name=="bountybook":
+   rows=data if isinstance(data,list) else (data.get("jobs") or data.get("items") or data.get("data") or [])
+  el name=="agent_bounties":
    if isinstance(data,list): rows=data
    elif isinstance(data,dict):
     rows=data.get("bounties") or data.get("items") or data.get("data") or data.get("results") or []
