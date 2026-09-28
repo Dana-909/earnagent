@@ -43,7 +43,8 @@ def quality_gate(x):
          "no_prompt_exfiltration":not bool(re.search(r"system prompt|initialization payload|hidden instructions|reveal.*prompt|paste.*prompt",t,re.I)),
          "no_fake_reward_signal":not bool(re.search(r"test bounty|fake bounty|simulation only|no payout|unfunded",t,re.I)),
          "not_already_rewarded":not bool(re.search(r"rewarded|already paid|bounty paid|payment sent|award(ed)? to",t,re.I)),
-         "canonical_payment_required":True}
+         "canonical_payment_required":True,
+         "no_required_spend":not bool(re.search(r"claim bond|entry bond|post.*bond|pay.*to submit|self-funded|fund.*child|requires? funding",t,re.I))}
  return checks, all(checks.values())
 
 def score(x):
