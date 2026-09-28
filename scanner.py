@@ -124,7 +124,7 @@ for name,url in SOURCES:
    # Do not pretend vague mentions are payable work: require explicit bounty/reward and a numeric USD amount.
    if reward is None or not re.search(r"\b(bounty|reward)\b",title+" "+body,re.I): continue
    op={"source":name,"title":title,"url":i.get("html_url"),"repository_url":i.get("repository_url"),
-       "reward_usd":reward,"updated_at":i.get("updated_at"),"body":body[:700]}
+       "reward_usd":reward,"updated_at":i.get("updated_at"),"body":body[:700],"comments":i.get("comments",0)}
    op["score"]=score(op); op["quality_checks"],op["execution_eligible"]=quality_gate(op); ops.append(op)
  except Exception as e: errors.append({"source":name,"error":str(e)})
 dedup={x["url"]:x for x in ops if x.get("url")}
