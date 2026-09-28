@@ -55,6 +55,30 @@ jobs:
               modes[m]=modes.get(m,0)+1
           print({"open_tasks":len(rows),"modes":modes})
           PY
+      - name: Verify Taskmarket live submission preconditions
+        run: |
+          python3 - <<'PY'
+          import json, subprocess
+          d=json.load(open("taskmarket_live.json"))
+          rows=d.get("data",d) if isinstance(d,dict) else d
+          if isinstance(rows,dict): rows=rows.get("tasks") or []
+          safe=[]
+          for t in rows:
+              desc=(t.get("description") or "").lower()
+              if t.get("mode")!="bounty" or not t.get("submissionWindowOpen"): continue
+              if t.get("stakeRequired"): continue
+              # Only self-contained single-file work with no account, purchase, or mandated external model.
+              if ("one self-contained offline html file" in desc or "one self-contained static svg" in desc) and not any(x in desc for x in ("claude opus","purchase","sign in with","api key")):
+                  p=subprocess.run(["taskmarket","task","get",t["id"]],capture_output=True,text=True)
+                  try:
+                      detail=json.loads(p.stdout)
+                      actions=(detail.get("data") or {}).get("pendingActions") or []
+                      submit=[a for a in actions if a.get("role")=="worker" and a.get("action")=="submit" and not a.get("requiresPayment")]
+                      if submit: safe.append({"id":t["id"],"referenceCode":t.get("referenceCode"),"reward":t.get("reward"),"command":submit[0].get("command")})
+                  except Exception: pass
+          json.dump({"safe_free_submit_candidates":safe},open("taskmarket_preflight.json","w"),separators=(",",":"))
+          print({"safe_free_submit_candidates":len(safe),"refs":[x["referenceCode"] for x in safe]})
+          PY
       - name: Run safety tests
         run: python3 -m unittest -v test_worker.py test_verifier.py test_submitter.py test_ledger.py test_runner.py
       - name: Validate end-to-end safety orchestration
