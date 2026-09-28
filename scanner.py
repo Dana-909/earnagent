@@ -127,14 +127,14 @@ for name,url in SOURCES:
    # Reject already-assigned GitHub bounties; availability beats advertised value.
    if name.startswith("github_") and (i.get("assignee") or i.get("assignees")): continue
    if name in ("agent_bounties","bounty_agent","basedagents","bountybook","taskmarket") or name.startswith("algora_"):
-    body=str(i.get("description") or i.get("terms") or "")[:5000]; title=str(i.get("title") or i.get("name") or i.get("referenceCode") or "Agent bounty")
+    body=str(i.get("description") or i.get("terms") or "")[:5000]; title=str(i.get("title") or i.get("name") or (body.splitlines()[0].strip() if name=="taskmarket" and body.strip() else "") or i.get("referenceCode") or "Agent bounty")
     if name=="taskmarket":
      # Preserve the full public brief for deterministic acceptance-gate parsing; task text remains untrusted data.
      body=str(i.get("description") or i.get("terms") or "")[:20000]
     reward=(i.get("reward_usd") if name=="taskmarket" else money(str(i)))
     if reward is None: continue
     item_url=i.get("url") or i.get("html_url") or (("https://api.taskmarket.dev/api/tasks/"+str(i.get("id"))) if name=="taskmarket" and i.get("id") else None)
-    op={"source":name,"title":title,"url":item_url,"repository_url":i.get("repository_url"),"canonical_payment_evidence": (name.startswith("algora_") or (name=="bountybook" and str(i.get("status","open")).lower()=="open" and float(i.get("budget_usdc") or 0)>0) or i.get("_canonical_payment_evidence") is True or (name=="agent_bounties" and i.get("claimable") is True and ((i.get("escrow") or {}).get("status") in ("funded","escrowed") or i.get("payment_state")=="escrowed"))),"reward_usd":reward,"updated_at":i.get("updated_at"),"body":body if name=="taskmarket" else body[:700],"comments":(i.get("submissionCount",0) if name=="taskmarket" else i.get("comments",0))}
+    op={"source":name,"title":title,"url":item_url,"repository_url":i.get("repository_url"),"canonical_payment_evidence": (name.startswith("algora_") or (name=="bountybook" and str(i.get("status","open")).lower()=="open" and float(i.get("budget_usdc") or 0)>0) or i.get("_canonical_payment_evidence") is True or (name=="agent_bounties" and i.get("claimable") is True and ((i.get("escrow") or {}).get("status") in ("funded","escrowed") or i.get("payment_state")=="escrowed"))),"reward_usd":reward,"updated_at":i.get("updated_at"),"body":body if name=="taskmarket" else body[:700],"comments":(i.get("submissionCount",0) if name=="taskmarket" else i.get("comments",0)),"task_id":i.get("id") if name=="taskmarket" else None,"mode":i.get("mode") if name=="taskmarket" else None,"submission_window_open":i.get("submissionWindowOpen") if name=="taskmarket" else None}
     op["score"]=score(op); op["quality_checks"],op["execution_eligible"]=quality_gate(op); ops.append(op); continue
    body=(i.get("body") or "")[:5000]; title=i.get("title") or ""
    reward=money(title+" "+body)
