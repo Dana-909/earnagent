@@ -6,7 +6,7 @@ DAILY_TARGET_MAX=100
 SOURCES=[
  ("agent_bounties","https://api.agentbounties.app/v1/base/autonomous-bounties/feed?network=base-mainnet&claimable_only=true"),
  ("bountybook","https://api.bountybook.ai/jobs?status=open&limit=50"), # canonical API host from provider docs/examples
- ("taskmarket","https://taskmarket.dev/api/tasks?status=open"), # funded USDC task market; fail-closed until schema/payment evidence verifies
+ ("taskmarket","https://api.taskmarket.dev/api/tasks?status=open&limit=50"), # official public REST list; Base USDC escrow
  ("basedagents","https://api.basedagents.ai/v1/tasks?status=open"),
  # Agent-native marketplaces are preferred because they expose explicit claim/submit lifecycles.
  # Write actions stay disabled until provider authentication, automation terms and payout are configured.
@@ -88,6 +88,8 @@ for name,url in SOURCES:
    rows=data if isinstance(data,list) else (data.get("items") or data.get("bounties") or data.get("data") or [])
   elif name=="bountybook":
    rows=data if isinstance(data,list) else (data.get("jobs") or data.get("items") or data.get("data") or [])
+  elif name=="taskmarket":
+   rows=data if isinstance(data,list) else (data.get("tasks") or data.get("items") or data.get("data") or [])
   elif name=="agent_bounties":
    if isinstance(data,list): rows=data
    elif isinstance(data,dict):
@@ -111,7 +113,7 @@ for name,url in SOURCES:
    repo_url=(i.get("repository_url") or "")
    # Reject already-assigned GitHub bounties; availability beats advertised value.
    if name.startswith("github_") and (i.get("assignee") or i.get("assignees")): continue
-   if name in ("agent_bounties","bounty_agent","basedagents","bountybook") or name.startswith("algora_"):
+   if name in ("agent_bounties","bounty_agent","basedagents","bountybook","taskmarket") or name.startswith("algora_"):
     body=str(i.get("description") or i.get("terms") or "")[:5000]; title=str(i.get("title") or i.get("name") or "Agent bounty")
     reward=money(str(i))
     if reward is None: continue
