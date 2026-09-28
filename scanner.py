@@ -74,6 +74,7 @@ def score(x):
   if k in t:s-=12
  return round(s,1)
 ops=[]; errors=[]
+source_diagnostics={"providers":{}}
 for name,url in SOURCES:
  try:
   if name=="bounty_agent" and not os.getenv("BOUNTY_AGENT_API_KEY"):
@@ -87,7 +88,7 @@ for name,url in SOURCES:
    raw_rows=data.get("tasks",data.get("items",data if isinstance(data,list) else [])) if isinstance(data,(dict,list)) else []
    funded=sum(1 for r in raw_rows if isinstance(r,dict) and (r.get("escrow") or {}).get("status")=="funded")
    claimable=sum(1 for r in raw_rows if isinstance(r,dict) and r.get("claimable") is True)
-   source_diagnostics={"basedagents":{"raw_tasks":len(raw_rows),"funded":funded,"claimable":claimable},"providers":{}}
+   source_diagnostics["basedagents"]={"raw_tasks":len(raw_rows),"funded":funded,"claimable":claimable}
   if name.startswith("algora_"):
    rows=data if isinstance(data,list) else (data.get("items") or data.get("bounties") or data.get("data") or [])
   elif name=="bountybook":
@@ -126,11 +127,11 @@ for name,url in SOURCES:
    # Reject already-assigned GitHub bounties; availability beats advertised value.
    if name.startswith("github_") and (i.get("assignee") or i.get("assignees")): continue
    if name in ("agent_bounties","bounty_agent","basedagents","bountybook","taskmarket") or name.startswith("algora_"):
-    body=str(i.get("description") or i.get("terms") or "")[:5000]; title=str(i.get("title") or i.get("name") or "Agent bounty")
+    body=str(i.get("description") or i.get("terms") or "")[:5000]; title=str(i.get("title") or i.get("name") or i.get("referenceCode") or "Agent bounty")
     reward=(i.get("reward_usd") if name=="taskmarket" else money(str(i)))
     if reward is None: continue
     item_url=i.get("url") or i.get("html_url") or (("https://api.taskmarket.dev/api/tasks/"+str(i.get("id"))) if name=="taskmarket" and i.get("id") else None)
-    op={"source":name,"title":title,"url":item_url,"repository_url":i.get("repository_url"),"canonical_payment_evidence": (name.startswith("algora_") or (name=="bountybook" and str(i.get("status","open")).lower()=="open" and float(i.get("budget_usdc") or 0)>0) or i.get("_canonical_payment_evidence") is True or (name=="agent_bounties" and i.get("claimable") is True and ((i.get("escrow") or {}).get("status") in ("funded","escrowed") or i.get("payment_state")=="escrowed"))),"reward_usd":reward,"updated_at":i.get("updated_at"),"body":body[:700],"comments":i.get("comments",0)}
+    op={"source":name,"title":title,"url":item_url,"repository_url":i.get("repository_url"),"canonical_payment_evidence": (name.startswith("algora_") or (name=="bountybook" and str(i.get("status","open")).lower()=="open" and float(i.get("budget_usdc") or 0)>0) or i.get("_canonical_payment_evidence") is True or (name=="agent_bounties" and i.get("claimable") is True and ((i.get("escrow") or {}).get("status") in ("funded","escrowed") or i.get("payment_state")=="escrowed"))),"reward_usd":reward,"updated_at":i.get("updated_at"),"body":body[:700],"comments":(i.get("submissionCount",0) if name=="taskmarket" else i.get("comments",0))}
     op["score"]=score(op); op["quality_checks"],op["execution_eligible"]=quality_gate(op); ops.append(op); continue
    body=(i.get("body") or "")[:5000]; title=i.get("title") or ""
    reward=money(title+" "+body)
