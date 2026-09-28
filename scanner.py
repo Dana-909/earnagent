@@ -8,7 +8,7 @@ SOURCES=[
  ("basedagents","https://api.basedagents.ai/v1/tasks?status=open"),
  # Agent-native marketplaces are preferred because they expose explicit claim/submit lifecycles.
  # Write actions stay disabled until provider authentication, automation terms and payout are configured.
- ("bounty_agent","https://api.trybounty.ai/v1/agent/bounties"), # requires BOUNTY_AGENT_API_KEY; unauthenticated failures are expected until owner setup
+ ("bounty_agent","https://api.trybounty.ai/v1/agent/bounties"), # canonical agent API; claim/submission requires BOUNTY_AGENT_API_KEY
  ("thejobcafe","https://thejobcafe.com/api/bounties"), # public discovery; currently may legitimately return zero open work
  ("github_algora","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+label%3A%22%F0%9F%92%8E+Bounty%22+-repo%3AClankerNation%2FOpenAgents+-repo%3AUnsafeLabs%2FBounty-Hunters&sort=updated&order=desc&per_page=100"), # discovery only; exclude empirically malicious bounty farms
  ("github_bounty","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+bounty+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
