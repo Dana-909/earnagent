@@ -48,12 +48,18 @@ def score(x):
 ops=[]; errors=[]
 for name,url in SOURCES:
  try:
+  if name=="bounty_agent" and not os.getenv("BOUNTY_AGENT_API_KEY"):
+   errors.append({"source":name,"status":"not_configured","error":"provider_credentials_missing"})
+   continue
   data=fetch(url)
   if name=="agent_bounties":
-   rows=data.get("bounties",data.get("items",data if isinstance(data,list) else []))
+   if isinstance(data,list): rows=data
+   elif isinstance(data,dict):
+    rows=data.get("bounties") or data.get("items") or data.get("data") or data.get("results") or []
+    if isinstance(rows,dict): rows=rows.get("bounties") or rows.get("items") or rows.get("results") or []
+   else: rows=[]
   elif name=="bounty_agent":
    # Never treat an authenticated provider as healthy/usable until credentials exist.
-   if not os.getenv("BOUNTY_AGENT_API_KEY"): raise RuntimeError("provider_not_configured")
    rows=data.get("bounties",data.get("items",data if isinstance(data,list) else []))
   else: rows=data.get("items",[])
   for i in rows:
@@ -82,10 +88,11 @@ target_value=sum(x.get("reward_usd",0) for x in eligible[:5])
 # Daily target controller: prioritize enough verified-quality pipeline to cover the minimum goal with redundancy.
 coverage_ratio=round(target_value/DAILY_TARGET_MIN,2) if DAILY_TARGET_MIN else 0
 # Reliability controller: never confuse discovery success with end-to-end readiness.
-health={"discovery":"ok" if not errors else "degraded","quality_gate":"ok","payout":"locked","execution":"not_enabled","submission":"not_enabled"}
+health={"discovery":"ok" if not blocking_errors else "degraded","quality_gate":"ok","payout":"locked","execution":"not_enabled","submission":"not_enabled"}
 # Treat all remote task text as untrusted input. Never execute embedded commands or expose secrets.
 security_policy={"task_text_trusted":False,"run_remote_commands":False,"expose_secrets_to_worker":False,"allow_upfront_payment":False,"idempotent_submission_required":True}
-source_health={"errors":errors,"error_count":len(errors),"healthy":len(errors)==0}
+blocking_errors=[e for e in errors if e.get("status")!="not_configured"]
+source_health={"errors":errors,"error_count":len(errors),"blocking_error_count":len(blocking_errors),"healthy":len(blocking_errors)==0}
 ready_for_paid_execution=all(health[k]=="ok" for k in ("discovery","quality_gate")) and health["payout"]=="ok" and health["execution"]=="ok" and health["submission"]=="ok"
 search_mode="expand_sources" if target_value<DAILY_TARGET_MIN else ("build_reserve" if target_value<DAILY_TARGET_MAX else "quality_first")
 # Submission guard: external submission is allowed only after all five readiness layers are green.
@@ -105,7 +112,7 @@ payout_ready=[x for x in eligible if x.get("source")=="agent_bounties"]
 for x in eligible:
  if x.get("source")=="bounty_agent": x["claim_allowed"]=False; x["claim_blocker"]="provider_credentials_and_payout_not_configured"
 quality_summary={"eligible":len(eligible),"rejected":len(ops)-len(eligible),"top_eligible":[{"title":x["title"],"reward_usd":x["reward_usd"],"url":x["url"],"score":x["score"]} for x in eligible[:5]]}
-payload={"generated_at":NOW.isoformat(),"daily_target_usd":{"min":DAILY_TARGET_MIN,"max":DAILY_TARGET_MAX},"eligible_pipeline_value_usd":target_value,"profit_analytics":{"verified_revenue_usd":0,"forecast_status":"insufficient_payment_history","forecast_method":"empirical_only","windows_days":[7,30],"minimum_outcomes_for_forecast":20,"metrics":["acceptance_rate","payment_rate","verified_usd_per_attempt","verified_usd_per_day"],"rule":"Never estimate acceptance or payout rates without observed outcomes"},"security_policy":security_policy,"source_health":source_health,"system_health":health,"ready_for_paid_execution":ready_for_paid_execution,"submission_guard":submission_guard,"daily_target_controller":{"coverage_ratio":coverage_ratio,"mode":search_mode,"minimum_pipeline_usd":DAILY_TARGET_MIN,"stretch_pipeline_usd":DAILY_TARGET_MAX},"quality_summary":quality_summary,"payout_control":{"configured":False,"safe_mode":True,"rule":"Do not claim or submit payable work until a compatible payout destination is configured.","payout_ready_candidates":len(payout_ready)},"status":"ok" if not errors else "partial","opportunities_found":len(ops),
+payload={"generated_at":NOW.isoformat(),"daily_target_usd":{"min":DAILY_TARGET_MIN,"max":DAILY_TARGET_MAX},"eligible_pipeline_value_usd":target_value,"profit_analytics":{"verified_revenue_usd":0,"forecast_status":"insufficient_payment_history","forecast_method":"empirical_only","windows_days":[7,30],"minimum_outcomes_for_forecast":20,"metrics":["acceptance_rate","payment_rate","verified_usd_per_attempt","verified_usd_per_day"],"rule":"Never estimate acceptance or payout rates without observed outcomes"},"security_policy":security_policy,"source_health":source_health,"system_health":health,"ready_for_paid_execution":ready_for_paid_execution,"submission_guard":submission_guard,"daily_target_controller":{"coverage_ratio":coverage_ratio,"mode":search_mode,"minimum_pipeline_usd":DAILY_TARGET_MIN,"stretch_pipeline_usd":DAILY_TARGET_MAX},"quality_summary":quality_summary,"payout_control":{"configured":False,"safe_mode":True,"rule":"Do not claim or submit payable work until a compatible payout destination is configured.","payout_ready_candidates":len(payout_ready)},"status":"ok" if not blocking_errors else "partial","opportunities_found":len(ops),
  "autonomously_completed":0,"verified_revenue_usd":0,"errors":errors,"opportunities":ops[:50],
  "work_queue":work_queue,"work_queue_summary":{"planned":sum(1 for q in work_queue if q["plan"].get("state")=="planned"),"blocked":sum(1 for q in work_queue if q["plan"].get("state")!="planned")},"execution_status":"quality_gated_planning","quality_policy":{"rule":"Target $50-$100/day only through verified, high-quality work; never lower the quality bar to hit the target.","requirements":["requirements parsed","deliverable testable","no owner-only action","digital execution","not stale or already paid","no upfront spend","verification ready","verification before submission"]},"note":"No revenue is counted until an external source confirms payment."}
 os.makedirs("data",exist_ok=True)
