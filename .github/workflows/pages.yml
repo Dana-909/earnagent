@@ -24,6 +24,19 @@ jobs:
         run: npm install -g @lucid-agents/taskmarket@latest
       - name: Verify Taskmarket CLI
         run: taskmarket --help >/dev/null
+      - name: Restore persistent Taskmarket identity
+        env:
+          TASKMARKET_IMPORT_KEY: ${{ secrets.TASKMARKET_AGENT_PRIVATE_KEY }}
+        run: |
+          if [ -z "$TASKMARKET_IMPORT_KEY" ]; then
+            echo "::notice::TASKMARKET_AGENT_PRIVATE_KEY is not configured; discovery stays read-only."
+          else
+            taskmarket wallet import
+            unset TASKMARKET_IMPORT_KEY
+            taskmarket address
+            taskmarket identity status
+            taskmarket legal status
+          fi
       - name: Inspect Taskmarket work
         run: |
           taskmarket task list --status open --limit 100 | tee taskmarket_live.json
