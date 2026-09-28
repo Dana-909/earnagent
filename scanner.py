@@ -4,6 +4,9 @@ DAILY_TARGET_MIN=50
 DAILY_TARGET_MAX=100
 SOURCES=[
  ("agent_bounties","https://api.agentbounties.app/v1/base/autonomous-bounties/feed?network=base-mainnet&claimable_only=true"),
+ # Agent-native marketplaces are preferred because they expose explicit claim/submit lifecycles.
+ # Write actions stay disabled until provider authentication, automation terms and payout are configured.
+ ("bounty_agent","https://api.trybounty.ai/v1/agent/bounties"),
  ("github_bounty","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+bounty+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
  ("github_reward","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+reward+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
 ]
