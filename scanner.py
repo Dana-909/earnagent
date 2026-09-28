@@ -9,7 +9,7 @@ SOURCES=[
  # Agent-native marketplaces are preferred because they expose explicit claim/submit lifecycles.
  # Write actions stay disabled until provider authentication, automation terms and payout are configured.
  ("bounty_agent","https://api.trybounty.ai/v1/agent/bounties"), # requires BOUNTY_AGENT_API_KEY; unauthenticated failures are expected until owner setup
- ("github_algora","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+label%3A%22%F0%9F%92%8E+Bounty%22&sort=updated&order=desc&per_page=100"),
+ ("github_algora","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+label%3A%22%F0%9F%92%8E+Bounty%22&sort=updated&order=desc&per_page=100"), # discovery only; label is not payment proof
  ("github_bounty","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+bounty+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
  ("github_reward","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+reward+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
 ]
@@ -43,7 +43,7 @@ def quality_gate(x):
          "no_prompt_exfiltration":not bool(re.search(r"system prompt|initialization payload|hidden instructions|reveal.*prompt|paste.*prompt",t,re.I)),
          "no_fake_reward_signal":not bool(re.search(r"test bounty|fake bounty|simulation only|no payout|unfunded",t,re.I)),
          "not_already_rewarded":not bool(re.search(r"rewarded|already paid|bounty paid|payment sent|award(ed)? to",t,re.I)),
-         "canonical_payment_required":bool(x.get("canonical_payment_evidence")),
+         "canonical_payment_required":bool(x.get("canonical_payment_evidence")) and x.get("source")!="github_algora",
          "no_required_spend":not bool(re.search(r"claim bond|entry bond|post.*bond|pay.*to submit|self-funded|fund.*child|requires? funding",t,re.I)),
          "no_broken_verifier_signal":not bool(re.search(r"unscoreable|snapshot.*404|artifact.*not published|not enterable|verifier.*broken|wrong_competition_mode",t,re.I)),
          "no_expired_scoring_window":not bool(re.search(r"scoring window.*already past|window.*closed|scoring is closed|deadline.*already past",t,re.I))}
