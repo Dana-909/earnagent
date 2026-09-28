@@ -36,7 +36,8 @@ def quality_gate(x):
          "no_upfront_spend":not bool(re.search(r"claim bond|entry bond|deposit|fund .*bounty|pay .*fee|hosted proof.*cost",t,re.I)),
          "verification_ready":not bool(re.search(r"verification-unavailable|recovery-reserved|quarantined|do not claim|funding-pending|not funded",t,re.I)),
          "no_human_approval_gate":not bool(re.search(r"wait for maintainer approval|maintainer must confirm|do not start work until|sign up as a developer",t,re.I)),
-         "not_saturated":int(x.get("comments") or 0)<100}
+         "not_saturated":int(x.get("comments") or 0)<100,
+         "fresh_enough":not bool(re.search(r"stale|deprecated|deactivated|no longer valid|wound down",t,re.I))}
  return checks, all(checks.values())
 
 def score(x):
@@ -73,6 +74,8 @@ for name,url in SOURCES:
   else: rows=data.get("items",[])
   for i in rows:
    if i.get("pull_request"): continue
+   # Reject archived repositories and issues with active linked work when metadata exposes it.
+   repo_url=(i.get("repository_url") or "")
    # Reject already-assigned GitHub bounties; availability beats advertised value.
    if name.startswith("github_") and (i.get("assignee") or i.get("assignees")): continue
    if name in ("agent_bounties","bounty_agent"):
