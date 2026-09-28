@@ -24,6 +24,8 @@ jobs:
         run: npm install -g @lucid-agents/taskmarket@latest
       - name: Verify Taskmarket CLI
         run: taskmarket --help >/dev/null
+      - name: Inspect Taskmarket work
+        run: taskmarket task list --status open --mode claim --limit 100 > taskmarket_live.json || true
       - name: Run safety tests
         run: python3 -m unittest -v test_worker.py test_verifier.py test_submitter.py test_ledger.py test_runner.py
       - name: Validate end-to-end safety orchestration
