@@ -6,7 +6,7 @@ DAILY_TARGET_MAX=100
 SOURCES=[
  ("agent_bounties","https://api.agentbounties.app/v1/base/autonomous-bounties/feed?network=base-mainnet&claimable_only=true"),
  ("bountybook","https://api.bountybook.ai/jobs?status=open&limit=50"), # canonical API host from provider docs/examples
- ("taskmarket","https://api.taskmarket.dev/api/tasks?status=open&limit=50"), # official REST list; Base USDC escrow
+ ("taskmarket","https://api.taskmarket.dev/api/tasks?status=open&sort=reward_desc&limit=50"), # official REST list; Base USDC escrow
  ("basedagents","https://api.basedagents.ai/v1/tasks?status=open"),
  # Agent-native marketplaces are preferred because they expose explicit claim/submit lifecycles.
  # Write actions stay disabled until provider authentication, automation terms and payout are configured.
@@ -83,13 +83,14 @@ for name,url in SOURCES:
    raw_rows=data.get("tasks",data.get("items",data if isinstance(data,list) else [])) if isinstance(data,(dict,list)) else []
    funded=sum(1 for r in raw_rows if isinstance(r,dict) and (r.get("escrow") or {}).get("status")=="funded")
    claimable=sum(1 for r in raw_rows if isinstance(r,dict) and r.get("claimable") is True)
-   source_diagnostics={"basedagents":{"raw_tasks":len(raw_rows),"funded":funded,"claimable":claimable}}
+   source_diagnostics={"basedagents":{"raw_tasks":len(raw_rows),"funded":funded,"claimable":claimable},"providers":{}}
   if name.startswith("algora_"):
    rows=data if isinstance(data,list) else (data.get("items") or data.get("bounties") or data.get("data") or [])
   elif name=="bountybook":
    rows=data if isinstance(data,list) else (data.get("jobs") or data.get("items") or data.get("data") or [])
   elif name=="taskmarket":
    rows=data if isinstance(data,list) else (data.get("tasks") or data.get("items") or data.get("data") or [])
+   source_diagnostics["providers"]["taskmarket"]={"raw_tasks":len(rows),"escrowed":sum(1 for r in rows if isinstance(r,dict) and bool(r.get("escrowTxHash"))),"claim_mode":sum(1 for r in rows if isinstance(r,dict) and str(r.get("mode","")).lower()=="claim")}
    for r in rows:
     if isinstance(r,dict):
      r["_canonical_payment_evidence"]=bool(r.get("escrowTxHash")) and str(r.get("status","")).lower()=="open"
