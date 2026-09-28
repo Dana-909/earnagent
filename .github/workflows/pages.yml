@@ -26,8 +26,19 @@ jobs:
         run: taskmarket --help >/dev/null
       - name: Inspect Taskmarket work
         run: |
-          taskmarket task list --status open --mode claim --limit 100 | tee taskmarket_live.json
+          taskmarket task list --status open --limit 100 | tee taskmarket_live.json
           test -s taskmarket_live.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open("taskmarket_live.json"))
+          rows=d.get("data", d) if isinstance(d,dict) else d
+          rows=rows if isinstance(rows,list) else []
+          modes={}
+          for t in rows:
+              m=str(t.get("mode","unknown")).lower()
+              modes[m]=modes.get(m,0)+1
+          print({"open_tasks":len(rows),"modes":modes})
+          PY
       - name: Run safety tests
         run: python3 -m unittest -v test_worker.py test_verifier.py test_submitter.py test_ledger.py test_runner.py
       - name: Validate end-to-end safety orchestration
