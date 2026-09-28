@@ -9,6 +9,7 @@ SOURCES=[
  # Agent-native marketplaces are preferred because they expose explicit claim/submit lifecycles.
  # Write actions stay disabled until provider authentication, automation terms and payout are configured.
  ("bounty_agent","https://api.trybounty.ai/v1/agent/bounties"), # requires BOUNTY_AGENT_API_KEY; unauthenticated failures are expected until owner setup
+ ("algora_open","https://algora.io/api/bounties"),
  ("github_algora","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+label%3A%22%F0%9F%92%8E+Bounty%22&sort=updated&order=desc&per_page=100"), # discovery only; label is not payment proof
  ("github_bounty","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+bounty+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
  ("github_reward","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+reward+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
@@ -80,7 +81,9 @@ for name,url in SOURCES:
    funded=sum(1 for r in raw_rows if isinstance(r,dict) and (r.get("escrow") or {}).get("status")=="funded")
    claimable=sum(1 for r in raw_rows if isinstance(r,dict) and r.get("claimable") is True)
    source_diagnostics={"basedagents":{"raw_tasks":len(raw_rows),"funded":funded,"claimable":claimable}}
-  if name=="agent_bounties":
+  if name=="algora_open":
+   rows=data if isinstance(data,list) else (data.get("bounties") or data.get("items") or [])
+  elif name=="agent_bounties":
    if isinstance(data,list): rows=data
    elif isinstance(data,dict):
     rows=data.get("bounties") or data.get("items") or data.get("data") or data.get("results") or []
@@ -101,11 +104,11 @@ for name,url in SOURCES:
    repo_url=(i.get("repository_url") or "")
    # Reject already-assigned GitHub bounties; availability beats advertised value.
    if name.startswith("github_") and (i.get("assignee") or i.get("assignees")): continue
-   if name in ("agent_bounties","bounty_agent","basedagents"):
+   if name in ("agent_bounties","bounty_agent","basedagents","algora_open"):
     body=str(i.get("description") or i.get("terms") or "")[:5000]; title=str(i.get("title") or i.get("name") or "Agent bounty")
     reward=money(str(i))
     if reward is None: continue
-    op={"source":name,"title":title,"url":i.get("url") or i.get("html_url"),"repository_url":i.get("repository_url"),"canonical_payment_evidence": (i.get("_canonical_payment_evidence") is True or (name=="agent_bounties" and i.get("claimable") is True and ((i.get("escrow") or {}).get("status") in ("funded","escrowed") or i.get("payment_state")=="escrowed"))),"reward_usd":reward,"updated_at":i.get("updated_at"),"body":body[:700],"comments":i.get("comments",0)}
+    op={"source":name,"title":title,"url":i.get("url") or i.get("html_url"),"repository_url":i.get("repository_url"),"canonical_payment_evidence": (name=="algora_open" or i.get("_canonical_payment_evidence") is True or (name=="agent_bounties" and i.get("claimable") is True and ((i.get("escrow") or {}).get("status") in ("funded","escrowed") or i.get("payment_state")=="escrowed"))),"reward_usd":reward,"updated_at":i.get("updated_at"),"body":body[:700],"comments":i.get("comments",0)}
     op["score"]=score(op); op["quality_checks"],op["execution_eligible"]=quality_gate(op); ops.append(op); continue
    body=(i.get("body") or "")[:5000]; title=i.get("title") or ""
    reward=money(title+" "+body)
