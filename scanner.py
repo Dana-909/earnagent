@@ -49,7 +49,7 @@ def quality_gate(x):
          "fresh_enough":not bool(re.search(r"stale|deprecated|deactivated|no longer valid|wound down|archived duplicate|historical snapshot|incomplete mirror|do not start|do not claim|canonical state unavailable",t,re.I)),
          # Never trust a bounty-label alone as proof of funding/provider legitimacy.
          "no_prompt_exfiltration":not bool(re.search(r"system prompt|initialization payload|hidden instructions|reveal.*prompt|paste.*prompt|startup instructions|session initialization context|pre-task text block|platform_instructions|paste.*loaded before any user",t,re.I)),
-         "no_fake_reward_signal":not bool(re.search(r"test bounty|fake bounty|simulation only|no payout|unfunded",t,re.I)),
+         "no_fake_reward_signal":not bool(re.search(r"test bounty|fake bounty|simulation only|no payout|unfunded|sandbox fixture|testing an automated.*bounty|livefire",t,re.I)),
          "not_already_rewarded":not bool(re.search(r"rewarded|already paid|bounty paid|payment sent|award(ed)? to",t,re.I)),
          "canonical_payment_required":bool(x.get("canonical_payment_evidence")) and x.get("source")!="github_algora",
          "no_required_spend":not bool(re.search(r"claim bond|entry bond|post.*bond|pay.*to submit|self-funded|fund.*child|requires? funding",t,re.I)),
