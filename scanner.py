@@ -95,7 +95,8 @@ eligible.sort(key=lambda x:(x.get("score",0),x.get("reward_usd",0)),reverse=True
 work_queue=[]
 for x in eligible[:10]:
  try:
-  p=make_plan(x)
+  candidate=dict(x); candidate["eligible"]=bool(x.get("execution_eligible"))
+  p=make_plan(candidate)
   work_queue.append({"title":x.get("title"),"url":x.get("url"),"reward_usd":x.get("reward_usd"),"plan":p})
  except Exception as e:
   work_queue.append({"title":x.get("title"),"url":x.get("url"),"reward_usd":x.get("reward_usd"),"plan":{"status":"blocked","reason":"planner_error","detail":str(e)[:160]}})
@@ -106,7 +107,7 @@ for x in eligible:
 quality_summary={"eligible":len(eligible),"rejected":len(ops)-len(eligible),"top_eligible":[{"title":x["title"],"reward_usd":x["reward_usd"],"url":x["url"],"score":x["score"]} for x in eligible[:5]]}
 payload={"generated_at":NOW.isoformat(),"daily_target_usd":{"min":DAILY_TARGET_MIN,"max":DAILY_TARGET_MAX},"eligible_pipeline_value_usd":target_value,"profit_analytics":{"verified_revenue_usd":0,"forecast_status":"insufficient_payment_history","forecast_method":"empirical_only","windows_days":[7,30],"minimum_outcomes_for_forecast":20,"metrics":["acceptance_rate","payment_rate","verified_usd_per_attempt","verified_usd_per_day"],"rule":"Never estimate acceptance or payout rates without observed outcomes"},"security_policy":security_policy,"source_health":source_health,"system_health":health,"ready_for_paid_execution":ready_for_paid_execution,"submission_guard":submission_guard,"daily_target_controller":{"coverage_ratio":coverage_ratio,"mode":search_mode,"minimum_pipeline_usd":DAILY_TARGET_MIN,"stretch_pipeline_usd":DAILY_TARGET_MAX},"quality_summary":quality_summary,"payout_control":{"configured":False,"safe_mode":True,"rule":"Do not claim or submit payable work until a compatible payout destination is configured.","payout_ready_candidates":len(payout_ready)},"status":"ok" if not errors else "partial","opportunities_found":len(ops),
  "autonomously_completed":0,"verified_revenue_usd":0,"errors":errors,"opportunities":ops[:50],
- "work_queue":work_queue,"work_queue_summary":{"planned":sum(1 for q in work_queue if q["plan"].get("status")=="planned"),"blocked":sum(1 for q in work_queue if q["plan"].get("status")!="planned")},"execution_status":"quality_gated_planning","quality_policy":{"rule":"Target $50-$100/day only through verified, high-quality work; never lower the quality bar to hit the target.","requirements":["requirements parsed","deliverable testable","no owner-only action","digital execution","not stale or already paid","no upfront spend","verification ready","verification before submission"]},"note":"No revenue is counted until an external source confirms payment."}
+ "work_queue":work_queue,"work_queue_summary":{"planned":sum(1 for q in work_queue if q["plan"].get("state")=="planned"),"blocked":sum(1 for q in work_queue if q["plan"].get("state")!="planned")},"execution_status":"quality_gated_planning","quality_policy":{"rule":"Target $50-$100/day only through verified, high-quality work; never lower the quality bar to hit the target.","requirements":["requirements parsed","deliverable testable","no owner-only action","digital execution","not stale or already paid","no upfront spend","verification ready","verification before submission"]},"note":"No revenue is counted until an external source confirms payment."}
 os.makedirs("data",exist_ok=True)
 with open("data/earnagent.json","w",encoding="utf-8") as f:json.dump(payload,f,ensure_ascii=False,separators=(",",":"))
 print(json.dumps({k:payload[k] for k in ("status","opportunities_found","autonomously_completed","verified_revenue_usd")}))
