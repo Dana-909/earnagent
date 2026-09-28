@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+<title id="title">Nature's Strange Eyes — Five Pupils, Five Ways to Look</title>
+<desc id="desc">An illustrated atlas comparing pupil shapes in a domestic cat, goat, horse, tiger, and dwarf cuttlefish. Each schematic eye is paired with a lighting label and a concise evidence-based caption.</desc>
+<metadata>
+Sources:
+Felis catus — https://news.berkeley.edu/2015/08/07/pupil-shape-and-ecological-niche/
+Capra hircus — https://news.berkeley.edu/2015/08/07/pupil-shape-and-ecological-niche/
+Equus caballus — https://news.berkeley.edu/2015/08/07/pupil-shape-and-ecological-niche/
+Panthera tigris — https://news.berkeley.edu/2015/08/07/pupil-shape-and-ecological-niche/
+Sepia bandensis — https://pmc.ncbi.nlm.nih.gov/articles/PMC4961147/
+Supporting W-shaped cuttlefish pupil: https://www2.eecs.berkeley.edu/Pubs/TechRpts/2023/EECS-2023-37.pdf
+</metadata>
+<defs>
+ <filter id="soft"><feGaussianBlur stdDeviation="18"/></filter>
+ <radialGradient id="bg"><stop stop-color="#17253a"/><stop offset="1" stop-color="#080d18"/></radialGradient>
+ <radialGradient id="irisA"><stop stop-color="#ffd36b"/><stop offset=".55" stop-color="#b06b24"/><stop offset="1" stop-color="#4b2818"/></radialGradient>
+ <radialGradient id="irisB"><stop stop-color="#b9d58b"/><stop offset=".6" stop-color="#718d51"/><stop offset="1" stop-color="#314126"/></radialGradient>
+ <radialGradient id="irisC"><stop stop-color="#9ed6d4"/><stop offset=".6" stop-color="#477f83"/><stop offset="1" stop-color="#17383e"/></radialGradient>
+ <style>
+ text{font-family:Inter,Arial,sans-serif;fill:#eef5ff}.name{font-size:28px;font-weight:700}.latin{font-size:19px;font-style:italic;fill:#9fb0c9}.tag{font-size:15px;font-weight:700;letter-spacing:2px;fill:#7fe0cf}.cap{font-size:18px;fill:#cbd6e7}.card{fill:#101a2a;stroke:#2d405c;stroke-width:2}.eye{stroke:#dfe8f4;stroke-width:8}.shine{fill:#fff;opacity:.65}
+ </style>
+</defs>
+<rect width="1600" height="1000" fill="url(#bg)"/>
+<circle cx="1280" cy="120" r="210" fill="#4ad8c8" opacity=".07" filter="url(#soft)"/>
+<text x="80" y="88" font-size="22" letter-spacing="4" fill="#7fe0cf">ILLUSTRATED FIELD NOTE · PUPIL GEOMETRY</text>
+<text x="80" y="150" font-size="52" font-weight="800">Nature’s Strange Eyes</text>
+<text x="80" y="195" font-size="25" fill="#aabbd1">Five pupils, five ways to look</text>
+
+<!-- entry 1 -->
+<g id="entry-cat" transform="translate(80 250)">
+ <rect class="card" width="455" height="300" rx="26"/>
+ <ellipse class="eye" cx="120" cy="105" rx="76" ry="58" fill="url(#irisA)"/><ellipse cx="120" cy="105" rx="10" ry="45" fill="#07090d"/><circle class="shine" cx="93" cy="78" r="9"/>
+ <text class="tag" x="220" y="70">BRIGHT LIGHT · VERTICAL</text><text class="name" x="220" y="108">Domestic cat</text><text class="latin" x="220" y="137">Felis catus</text>
+ <text class="cap" x="34" y="202"><tspan x="34">A vertical slit can constrict far more than a</tspan><tspan x="34" dy="25">round pupil. In cats, that broad dynamic range</tspan><tspan x="34" dy="25">supports vision across bright and dim conditions.</tspan></text>
+</g>
+
+<!-- entry 2 -->
+<g id="entry-goat" transform="translate(572 250)">
+ <rect class="card" width="455" height="300" rx="26"/>
+ <ellipse class="eye" cx="120" cy="105" rx="78" ry="58" fill="url(#irisB)"/><rect x="61" y="96" width="118" height="18" rx="9" fill="#07090d"/><circle class="shine" cx="92" cy="78" r="8"/>
+ <text class="tag" x="220" y="70">DAYLIGHT · HORIZONTAL</text><text class="name" x="220" y="108">Domestic goat</text><text class="latin" x="220" y="137">Capra hircus</text>
+ <text class="cap" x="34" y="202"><tspan x="34">Horizontal pupils widen the ground-level view.</tspan><tspan x="34" dy="25">When goats lower their heads to graze, the eyes</tspan><tspan x="34" dy="25">rotate to keep pupils aligned with the ground.</tspan></text>
+</g>
+
+<!-- entry 3 -->
+<g id="entry-horse" transform="translate(1064 250)">
+ <rect class="card" width="455" height="300" rx="26"/>
+ <ellipse class="eye" cx="120" cy="105" rx="78" ry="56" fill="url(#irisC)"/><rect x="55" y="95" width="130" height="20" rx="10" fill="#07090d"/><circle class="shine" cx="91" cy="78" r="8"/>
+ <text class="tag" x="220" y="70">DAYLIGHT · HORIZONTAL</text><text class="name" x="220" y="108">Horse</text><text class="latin" x="220" y="137">Equus caballus</text>
+ <text class="cap" x="34" y="202"><tspan x="34">Horses share the grazing-prey pattern: a broad</tspan><tspan x="34" dy="25">horizontal pupil expands panoramic ground vision,</tspan><tspan x="34" dy="25">while eye rotation preserves that orientation.</tspan></text>
+</g>
+
+<!-- entry 4 -->
+<g id="entry-tiger" transform="translate(326 590)">
+ <rect class="card" width="455" height="300" rx="26"/>
+ <ellipse class="eye" cx="120" cy="105" rx="76" ry="58" fill="url(#irisA)"/><circle cx="120" cy="105" r="31" fill="#07090d"/><circle class="shine" cx="94" cy="78" r="9"/>
+ <text class="tag" x="220" y="70">DAYLIGHT · ROUND</text><text class="name" x="220" y="108">Tiger</text><text class="latin" x="220" y="137">Panthera tigris</text>
+ <text class="cap" x="34" y="202"><tspan x="34">Unlike smaller ambush cats with vertical slits,</tspan><tspan x="34" dy="25">large cats such as tigers have round pupils—an</tspan><tspan x="34" dy="25">important exception to a simple predator rule.</tspan></text>
+</g>
+
+<!-- entry 5 -->
+<g id="entry-cuttlefish" transform="translate(819 590)">
+ <rect class="card" width="455" height="300" rx="26"/>
+ <ellipse class="eye" cx="120" cy="105" rx="78" ry="58" fill="#b88c61" stroke="#dfe8f4" stroke-width="8"/>
+ <path d="M52 99 Q72 77 91 99 Q110 121 129 99 Q148 77 188 99 L188 116 Q151 97 130 119 Q109 141 89 119 Q70 98 52 116Z" fill="#07090d"/><circle class="shine" cx="92" cy="72" r="8"/>
+ <text class="tag" x="220" y="70">SHALLOW WATER · W-SHAPED</text><text class="name" x="220" y="108">Dwarf cuttlefish</text><text class="latin" x="220" y="137">Sepia bandensis</text>
+ <text class="cap" x="34" y="202"><tspan x="34">Its off-axis pupil geometry admits light from</tspan><tspan x="34" dy="25">multiple directions. Research models link this</tspan><tspan x="34" dy="25">shape to strong chromatic blur in cephalopod eyes.</tspan></text>
+</g>
+
+<text x="80" y="948" font-size="18" fill="#9fb0c9">SCHEMATIC CAVEAT · Pupil shape changes with lighting; these drawings compare documented forms, not fixed appearances.</text>
+<text x="1518" y="948" text-anchor="end" font-size="16" fill="#61738d">5 SPECIES · 4 SHAPE FAMILIES</text>
+</svg>
