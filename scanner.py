@@ -90,7 +90,7 @@ for name,url in SOURCES:
    rows=data if isinstance(data,list) else (data.get("jobs") or data.get("items") or data.get("data") or [])
   elif name=="taskmarket":
    rows=data if isinstance(data,list) else (data.get("tasks") or data.get("items") or data.get("data") or [])
-   source_diagnostics["providers"]["taskmarket"]={"raw_tasks":len(rows),"escrowed":sum(1 for r in rows if isinstance(r,dict) and bool(r.get("escrowTxHash"))),"claim_mode":sum(1 for r in rows if isinstance(r,dict) and str(r.get("mode","")).lower()=="claim"),"submission_open":sum(1 for r in rows if isinstance(r,dict) and r.get("submissionWindowOpen") is True)}
+   source_diagnostics["providers"]["taskmarket"]={"raw_tasks":len(rows),"escrowed":sum(1 for r in rows if isinstance(r,dict) and bool(r.get("escrowTxHash")) and bool(r.get("id")) and float(r.get("reward") or 0)>0),"claim_mode":sum(1 for r in rows if isinstance(r,dict) and str(r.get("mode","")).lower()=="claim"),"submission_open":sum(1 for r in rows if isinstance(r,dict) and r.get("submissionWindowOpen") is True)}
    for r in rows:
     if isinstance(r,dict):
      r["_canonical_payment_evidence"]=bool(r.get("escrowTxHash")) and str(r.get("status","")).lower()=="open" and str(r.get("mode","")).lower()=="claim" and not bool(r.get("stakeRequired")) and not r.get("claimedBy") and (r.get("submissionWindowOpen") is not False) and str(r.get("taskVisibility","public")).lower()=="public" and bool(r.get("escrowTxHash"))
