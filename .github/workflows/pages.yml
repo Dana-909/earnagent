@@ -25,7 +25,8 @@ jobs:
       - name: Verify Taskmarket CLI
         run: taskmarket --help >/dev/null
       - name: Inspect Taskmarket work
-        run: taskmarket task list --status open --mode claim --limit 100 | tee taskmarket_live.json
+        run: |
+          taskmarket task list --status open --mode claim --limit 100 | tee taskmarket_live.json
           test -s taskmarket_live.json
       - name: Run safety tests
         run: python3 -m unittest -v test_worker.py test_verifier.py test_submitter.py test_ledger.py test_runner.py
