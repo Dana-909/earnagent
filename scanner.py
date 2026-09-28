@@ -6,7 +6,7 @@ SOURCES=[
  ("agent_bounties","https://api.agentbounties.app/v1/base/autonomous-bounties/feed?network=base-mainnet&claimable_only=true"),
  # Agent-native marketplaces are preferred because they expose explicit claim/submit lifecycles.
  # Write actions stay disabled until provider authentication, automation terms and payout are configured.
- ("bounty_agent","https://api.trybounty.ai/v1/agent/bounties"),
+ ("bounty_agent","https://api.trybounty.ai/v1/agent/bounties"), # requires BOUNTY_AGENT_API_KEY; unauthenticated failures are expected until owner setup
  ("github_bounty","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+bounty+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
  ("github_reward","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+reward+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
 ]
@@ -14,6 +14,8 @@ def fetch(url):
  headers={"User-Agent":"EarnAgent/1.0","Accept":"application/vnd.github+json"}
  token=os.getenv("GITHUB_TOKEN")
  if token and "api.github.com" in url: headers["Authorization"]="Bearer "+token
+ bounty_token=os.getenv("BOUNTY_AGENT_API_KEY")
+ if bounty_token and "api.trybounty.ai" in url: headers["Authorization"]="Bearer "+bounty_token
  req=urllib.request.Request(url,headers=headers)
  with urllib.request.urlopen(req,timeout=30) as r:return json.load(r)
 def money(text):
