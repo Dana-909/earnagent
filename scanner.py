@@ -13,6 +13,7 @@ SOURCES=[
  ("algora_highlight","https://api.algora.io/api/orgs/highlight/bounties?status=open"),
  ("algora_cometml","https://api.algora.io/api/orgs/comet-ml/bounties?status=open"),
  ("algora_coollabsio","https://api.algora.io/api/orgs/coollabsio/bounties?status=open"),
+ ("algora_cloudgakkai","https://api.algora.io/api/orgs/cloudgakkai/bounties?status=open"),
  ("algora_cal","https://api.algora.io/api/orgs/cal/bounties?status=open"),
  ("algora_revertinc","https://api.algora.io/api/orgs/revertinc/bounties?status=open"),
  ("algora_calcom","https://api.algora.io/api/orgs/calcom/bounties?status=open"),
