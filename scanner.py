@@ -127,6 +127,13 @@ for name,url in SOURCES:
        "reward_usd":reward,"updated_at":i.get("updated_at"),"body":body[:700],"comments":i.get("comments",0)}
    op["score"]=score(op); op["quality_checks"],op["execution_eligible"]=quality_gate(op); ops.append(op)
  except Exception as e: errors.append({"source":name,"error":str(e)})
+# Cross-source resolver: a provider record may prove payment for the same URL discovered on GitHub.
+# Never infer payment from a GitHub label; require an independent canonical provider record.
+provider_urls={x.get("url") for x in ops if x.get("canonical_payment_evidence") and x.get("url")}
+for x in ops:
+ if x.get("url") in provider_urls and not x.get("canonical_payment_evidence"):
+  x["canonical_payment_evidence"]=True
+  x["quality_checks"],x["execution_eligible"]=quality_gate(x)
 dedup={x["url"]:x for x in ops if x.get("url")}
 ops=list(dedup.values())
 ops.sort(key=lambda x:(x["execution_eligible"],x["score"],x["reward_usd"]),reverse=True)
