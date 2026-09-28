@@ -10,8 +10,9 @@ SOURCES=[
  # Write actions stay disabled until provider authentication, automation terms and payout are configured.
  ("bounty_agent","https://api.trybounty.ai/v1/agent/bounties"), # requires BOUNTY_AGENT_API_KEY; unauthenticated failures are expected until owner setup
  ("algora_cal","https://api.algora.io/api/orgs/cal/bounties?status=active"),
- ("algora_thesysdev","https://api.algora.io/api/orgs/thesysdev/bounties?status=active"),
  ("algora_revertinc","https://api.algora.io/api/orgs/revertinc/bounties?status=active"),
+ ("algora_calcom","https://api.algora.io/api/orgs/calcom/bounties?status=active"),
+ ("algora_activepieces","https://api.algora.io/api/orgs/activepieces/bounties?status=active"),
  ("github_algora","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+label%3A%22%F0%9F%92%8E+Bounty%22&sort=updated&order=desc&per_page=100"), # discovery only; label is not payment proof
  ("github_bounty","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+bounty+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
  ("github_reward","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+reward+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
