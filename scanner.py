@@ -87,7 +87,7 @@ for name,url in SOURCES:
    rows=data if isinstance(data,list) else (data.get("items") or data.get("bounties") or data.get("data") or [])
   elif name=="bountybook":
    rows=data if isinstance(data,list) else (data.get("jobs") or data.get("items") or data.get("data") or [])
-   elif name=="agent_bounties":
+  elif name=="agent_bounties":
    if isinstance(data,list): rows=data
    elif isinstance(data,dict):
     rows=data.get("bounties") or data.get("items") or data.get("data") or data.get("results") or []
