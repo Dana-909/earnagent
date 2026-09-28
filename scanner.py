@@ -58,7 +58,7 @@ def score(x):
  comments=int(x.get("comments") or 0)
  # Competition penalty: avoid spending effort on saturated bounties.
  # Dead/farm repositories can look deceptively uncontested; reward size alone must not dominate.
- repo=(x.get("repo") or x.get("repository") or "").lower()
+ repo=(x.get("repo") or x.get("repository") or x.get("repository_url") or "").lower()
  farm_repos=("clankernation/openagents","unsafelabs/bounty-hunters","securebananalabs/bug-bounty","xevrion-v2/agent-playground")
  if any(r in repo for r in farm_repos): s-=1000
  if comments>=100: s-=60
