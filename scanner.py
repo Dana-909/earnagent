@@ -53,7 +53,7 @@ def quality_gate(x):
          "no_prompt_exfiltration":not bool(re.search(r"system prompt|initialization payload|hidden instructions|reveal.*prompt|paste.*prompt|startup instructions|session initialization context|pre-task text block|platform_instructions|paste.*loaded before any user",t,re.I)),
          "no_fake_reward_signal":not bool(re.search(r"test bounty|fake bounty|simulation only|no payout|unfunded|sandbox fixture|testing an automated.*bounty|livefire",t,re.I)),
          "not_already_rewarded":not bool(re.search(r"rewarded|already paid|bounty paid|payment sent|award(ed)? to",t,re.I)),
-         "canonical_payment_required":bool(x.get("canonical_payment_evidence")) and x.get("source")!="github_algora",
+         "canonical_payment_required":bool(x.get("canonical_payment_evidence")),
          "no_required_spend":not bool(re.search(r"claim bond|entry bond|post.*bond|pay.*to submit|self-funded|fund.*child|requires? funding",t,re.I)),
          "no_broken_verifier_signal":not bool(re.search(r"unscoreable|snapshot.*404|artifact.*not published|not enterable|verifier.*broken|wrong_competition_mode",t,re.I)),
          "no_expired_scoring_window":not bool(re.search(r"scoring window.*already past|window.*closed|scoring is closed|deadline.*already past",t,re.I))}
