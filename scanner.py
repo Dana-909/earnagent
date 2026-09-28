@@ -3,6 +3,7 @@ from worker import make_plan
 NOW=datetime.datetime.now(datetime.timezone.utc)
 DAILY_TARGET_MIN=50
 DAILY_TARGET_MAX=100
+WITHDRAWAL_ADDRESS=os.getenv("EARNAGENT_WITHDRAWAL_ADDRESS","0x0dE69041d6bc1C137b2d9a5BB4539e851907F061")
 SOURCES=[
  ("agent_bounties","https://api.agentbounties.app/v1/base/autonomous-bounties/feed?network=base-mainnet&claimable_only=true"),
  ("bountybook","https://api.bountybook.ai/jobs?status=open&limit=50"), # canonical API host from provider docs/examples
