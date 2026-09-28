@@ -35,8 +35,8 @@ def quality_gate(x):
  t=(x.get("title","")+" "+x.get("body","")).lower()
  checks={"clear_deliverable":bool(re.search(r"\b(fix|implement|add|write|document|translate|test|create|update)\b",t)),
          "has_reward":bool(x.get("reward_usd") and x["reward_usd"]>0),
-         "no_owner_action":not bool(re.search(r"\\b(kyc|identity verification|phone call|onsite|purchase|deposit|subscription|account required)\\b",t)),
-         "digital":not bool(re.search(r"\\b(ship|delivery|physical|in person|on-site)\\b",t)),
+         "no_owner_action":not bool(re.search(r"\b(kyc|identity verification|phone call|onsite|purchase|deposit|subscription|account required)\b",t)),
+         "digital":not bool(re.search(r"\b(ship|delivery|physical|in person|on-site)\b",t)),
          "not_stale":not bool(re.search(r"archived duplicate|historical snapshot|already paid|waiting_sponsor|unavailable|do not claim",t,re.I)),
          "no_upfront_spend":not bool(re.search(r"claim bond|entry bond|deposit|fund .*bounty|pay .*fee|hosted proof.*cost",t,re.I)),
          "verification_ready":not bool(re.search(r"verification-unavailable|recovery-reserved|quarantined|do not claim|funding-pending|not funded",t,re.I)),
