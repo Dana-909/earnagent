@@ -9,9 +9,9 @@ SOURCES=[
  # Agent-native marketplaces are preferred because they expose explicit claim/submit lifecycles.
  # Write actions stay disabled until provider authentication, automation terms and payout are configured.
  ("bounty_agent","https://api.trybounty.ai/v1/agent/bounties"), # requires BOUNTY_AGENT_API_KEY; unauthenticated failures are expected until owner setup
- ("algora_projectdiscovery","https://algora.io/projectdiscovery/bounties"),
- ("algora_highlight","https://algora.io/highlight/bounties"),
- ("algora_terrastruct","https://algora.io/terrastruct/bounties"),
+ ("algora_cal","https://api.algora.io/api/orgs/cal/bounties?status=active"),
+ ("algora_thesysdev","https://api.algora.io/api/orgs/thesysdev/bounties?status=active"),
+ ("algora_revertinc","https://api.algora.io/api/orgs/revertinc/bounties?status=active"),
  ("github_algora","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+label%3A%22%F0%9F%92%8E+Bounty%22&sort=updated&order=desc&per_page=100"), # discovery only; label is not payment proof
  ("github_bounty","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+bounty+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
  ("github_reward","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+reward+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
@@ -84,8 +84,7 @@ for name,url in SOURCES:
    claimable=sum(1 for r in raw_rows if isinstance(r,dict) and r.get("claimable") is True)
    source_diagnostics={"basedagents":{"raw_tasks":len(raw_rows),"funded":funded,"claimable":claimable}}
   if name.startswith("algora_"):
-   # Algora org pages are canonical availability sources but HTML, not a stable JSON execution API.
-   rows=[]
+   rows=data if isinstance(data,list) else (data.get("items") or data.get("bounties") or [])
   elif name=="agent_bounties":
    if isinstance(data,list): rows=data
    elif isinstance(data,dict):
