@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run safety tests
-        run: python3 -m unittest -v test_worker.py test_verifier.py test_submitter.py
+        run: python3 -m unittest -v test_worker.py test_verifier.py test_submitter.py test_ledger.py
       - name: Run autonomous earning scout
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
