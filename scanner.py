@@ -8,6 +8,7 @@ SOURCES=[
  # Agent-native marketplaces are preferred because they expose explicit claim/submit lifecycles.
  # Write actions stay disabled until provider authentication, automation terms and payout are configured.
  ("bounty_agent","https://api.trybounty.ai/v1/agent/bounties"), # requires BOUNTY_AGENT_API_KEY; unauthenticated failures are expected until owner setup
+ ("github_algora","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+label%3A%22%F0%9F%92%8E+Bounty%22&sort=updated&order=desc&per_page=100"),
  ("github_bounty","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+bounty+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
  ("github_reward","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+reward+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
 ]
@@ -72,6 +73,8 @@ for name,url in SOURCES:
   else: rows=data.get("items",[])
   for i in rows:
    if i.get("pull_request"): continue
+   # Reject already-assigned GitHub bounties; availability beats advertised value.
+   if name.startswith("github_") and (i.get("assignee") or i.get("assignees")): continue
    if name in ("agent_bounties","bounty_agent"):
     body=str(i.get("description") or i.get("terms") or "")[:5000]; title=str(i.get("title") or i.get("name") or "Agent bounty")
     reward=money(str(i))
