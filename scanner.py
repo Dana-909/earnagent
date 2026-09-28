@@ -5,6 +5,7 @@ DAILY_TARGET_MIN=50
 DAILY_TARGET_MAX=100
 SOURCES=[
  ("agent_bounties","https://api.agentbounties.app/v1/base/autonomous-bounties/feed?network=base-mainnet&claimable_only=true"),
+ ("basedagents","https://basedagents.ai/api/v1/tasks?status=open"),
  # Agent-native marketplaces are preferred because they expose explicit claim/submit lifecycles.
  # Write actions stay disabled until provider authentication, automation terms and payout are configured.
  ("bounty_agent","https://api.trybounty.ai/v1/agent/bounties"), # requires BOUNTY_AGENT_API_KEY; unauthenticated failures are expected until owner setup
@@ -87,7 +88,7 @@ for name,url in SOURCES:
    repo_url=(i.get("repository_url") or "")
    # Reject already-assigned GitHub bounties; availability beats advertised value.
    if name.startswith("github_") and (i.get("assignee") or i.get("assignees")): continue
-   if name in ("agent_bounties","bounty_agent"):
+   if name in ("agent_bounties","bounty_agent","basedagents"):
     body=str(i.get("description") or i.get("terms") or "")[:5000]; title=str(i.get("title") or i.get("name") or "Agent bounty")
     reward=money(str(i))
     if reward is None: continue
