@@ -9,6 +9,7 @@ SOURCES=[
  # Agent-native marketplaces are preferred because they expose explicit claim/submit lifecycles.
  # Write actions stay disabled until provider authentication, automation terms and payout are configured.
  ("bounty_agent","https://api.trybounty.ai/v1/agent/bounties"), # requires BOUNTY_AGENT_API_KEY; unauthenticated failures are expected until owner setup
+ ("thejobcafe","https://thejobcafe.com/api/bounties"), # public discovery; currently may legitimately return zero open work
  ("github_algora","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+label%3A%22%F0%9F%92%8E+Bounty%22+-repo%3AClankerNation%2FOpenAgents+-repo%3AUnsafeLabs%2FBounty-Hunters&sort=updated&order=desc&per_page=100"), # discovery only; exclude empirically malicious bounty farms
  ("github_bounty","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+bounty+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
  ("github_reward","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+reward+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
@@ -89,6 +90,8 @@ for name,url in SOURCES:
     rows=data.get("bounties") or data.get("items") or data.get("data") or data.get("results") or []
     if isinstance(rows,dict): rows=rows.get("bounties") or rows.get("items") or rows.get("results") or []
    else: rows=[]
+  elif name=="thejobcafe":
+   rows=data if isinstance(data,list) else (data.get("bounties") or data.get("items") or data.get("data") or [])
   elif name=="bounty_agent":
    # Never treat an authenticated provider as healthy/usable until credentials exist.
    rows=data.get("bounties",data.get("items",data if isinstance(data,list) else []))
