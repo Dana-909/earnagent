@@ -89,7 +89,7 @@ def main():
     # 2) AI-backed adapter for new claim/bounty tasks with safe self-contained deliverables.
     for t in ts:
         if t.get("id") in submitted_ids or t.get("stakeRequired") or not t.get("escrowTxHash"): continue
-        if t.get("mode") not in ("bounty","claim") or not t.get("submissionWindowOpen"): continue
+        if t.get("mode") not in ("bounty","claim"): continue
         try:
             d=cli("task","get",t["id"]) or {}
             fmt=choose_ai_format(task_text(t))
