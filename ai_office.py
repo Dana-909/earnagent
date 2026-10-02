@@ -24,8 +24,10 @@ def collaborate(task, fmt):
     try:
         with urllib.request.urlopen(req,timeout=45) as r: data=json.loads(r.read().decode())
         result=json.loads(data.get("output_text","").strip())
-        result["office_roles"]=[x["name"] for x in ROLES]+["Executor"]
-        result["model"]=model
-        return result
+        fixed=repair(result,task,fmt)
+        if fixed is None: return None
+        fixed["office_roles"]=[x["name"] for x in ROLES]
+        fixed["model"]=model
+        return fixed
     except Exception:
         return None
