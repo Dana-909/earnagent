@@ -146,7 +146,7 @@ def render_discovery_files(products):
     slugs=[p["slug"] for p in products]
     (ROOT/"robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: /sitemap.xml\n",encoding="utf-8")
     urls=["/store/"]+[f"/store/products/{s}.{k}" for p in products for s,k in [(p["slug"],p["kind"])]]
-    xml=["<?xml version="1.0" encoding="UTF-8"?>","<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">"]
+    xml=['<?xml version="1.0" encoding="UTF-8"?>','<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for u in urls: xml.append(f"<url><loc>{u}</loc></url>")
     xml.append("</urlset>")
     (ROOT/"sitemap.xml").write_text("\n".join(xml),encoding="utf-8")
