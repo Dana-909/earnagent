@@ -2,6 +2,7 @@
 Roles: Scout, Strategist, Producer, Auditor.
 """
 import json, os, urllib.request
+from office_fixer import repair
 def choose_model(task, fmt):
     reward=float(task.get("reward_usd") or task.get("reward") or 0)
     complexity=len(str(task.get("description") or task))
