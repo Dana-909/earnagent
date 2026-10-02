@@ -63,7 +63,7 @@ def choose_ai_format(desc):
     return None
 
 def ai_generate(desc, fmt, path):
-    import os, urllib.request
+    import os, urllib.request, time
     key=os.environ.get("OPENAI_API_KEY")
     if not key: return False, "OPENAI_API_KEY not configured"
     model=os.environ.get("EARNAGENT_MODEL","gpt-5.6-luna")
@@ -71,7 +71,16 @@ def ai_generate(desc, fmt, path):
     user="OUTPUT FORMAT: "+fmt+"\nTASK BRIEF:\n"+desc+"\n\nReturn the complete deliverable only."
     payload=json.dumps({"model":model,"input":[{"role":"system","content":system},{"role":"user","content":user}],"max_output_tokens":12000}).encode()
     req=urllib.request.Request("https://api.openai.com/v1/responses",data=payload,headers={"Authorization":"Bearer "+key,"Content-Type":"application/json"})
-    with urllib.request.urlopen(req,timeout=120) as resp: data=json.loads(resp.read().decode())
+    last=None
+    for attempt in range(2):
+        try:
+            with urllib.request.urlopen(req,timeout=90) as resp: data=json.loads(resp.read().decode())
+            break
+        except Exception as e:
+            last=e
+            if attempt==0: time.sleep(2)
+    else:
+        return False, "AI request failed: "+str(last)[:240]
     text=data.get("output_text","").strip()
     if not text or text=="UNSATISFIABLE": return False, "model returned no safe deliverable"
     if text.startswith("```"):
@@ -95,7 +104,10 @@ def main():
     submitted_ids={str(x.get("taskId")) for x in existing_mine if x.get("taskId")}
     addr=wallet_address(report.get("wallet"))
     # 2) AI-backed adapter for new claim/bounty tasks with safe self-contained deliverables.
+    # Bound each cycle so a slow provider cannot starve the next earning cycle.
+    ai_attempts=0
     for t in ts:
+        if ai_attempts>=8: break
         if t.get("id") in submitted_ids or t.get("stakeRequired") or not t.get("escrowTxHash"): continue
         if t.get("mode") not in ("bounty","claim"): continue
         try:
@@ -116,6 +128,7 @@ def main():
             if not submit: continue
             ext={"html":"html","svg":"svg","markdown":"md"}[fmt]
             path=OUT/(t["id"]+"."+ext)
+            ai_attempts+=1
             ok,meta=ai_generate(task_text(t),fmt,path)
             if not ok:
                 report["ai_skipped"].append({"id":t.get("id"),"reason":str(meta)[:300]})
