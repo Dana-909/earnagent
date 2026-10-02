@@ -21,3 +21,6 @@ GitHub Actions runs approximately every 5 minutes. Each cycle runs the action-fi
 
 ## Deployment note
 Each scheduled run creates a fresh Pages artifact. Verified revenue and execution state are persisted in `data/taskmarket.json`, `data/taskmarket_active.json` and `data/earnagent.json`.
+
+## Autonomous sales layer
+The sales engine now runs every cycle and generates a small catalog of original digital goods (offline tools, templates and SVG assets). It publishes the catalog through GitHub Pages and probes a configured Lemon Squeezy store when `LEMONSQUEEZY_API_KEY` is available. Lemon Squeezy supports programmatic store/product management and checkout links; live payouts still require an activated seller account and payout method. The engine never counts listings or simulated orders as revenue.
