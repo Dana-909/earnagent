@@ -85,7 +85,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           EARNAGENT_MODEL: gpt-5.6-luna
           EARNAGENT_MAX_ACTIONS: "16"
-          EARNAGENT_MAX_AI: "10"
+          EARNAGENT_MAX_AI: "3"
         run: python3 taskmarket_active.py
       - name: Report action-first result
         run: |
