@@ -29,6 +29,10 @@ class SalesEngineTests(unittest.TestCase):
             if old is None: os.environ.pop("LEMONSQUEEZY_API_KEY",None)
             else: os.environ["LEMONSQUEEZY_API_KEY"]=old
 
+    def test_optimizer_has_product_sales_mapping(self):
+        import sales_optimizer
+        self.assertEqual(sales_optimizer.PRODUCT_TO_NICHE["Freelancer Invoice & Quote Kit"],"local-service-admin")
+
     def test_optimizer_module_imports(self):
         import sales_optimizer
         self.assertGreaterEqual(len(sales_optimizer.NICHES), 10)
