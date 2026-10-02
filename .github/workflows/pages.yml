@@ -80,6 +80,9 @@ jobs:
           print({"safe_free_submit_candidates":len(safe),"refs":[x["referenceCode"] for x in safe]})
           PY
       - name: Run autonomous Taskmarket worker
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          EARNAGENT_MODEL: gpt-5.6-luna
         run: python3 taskmarket_worker.py
       - name: Run safety tests
         run: python3 -m unittest -v test_worker.py test_verifier.py test_submitter.py test_ledger.py test_runner.py test_taskmarket_worker.py
