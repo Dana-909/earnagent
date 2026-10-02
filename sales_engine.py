@@ -141,6 +141,22 @@ def choose_catalog_plan():
             if not any(p["slug"]==ai["slug"] for p in base): base.append(ai)
     return base
 
+def render_direct_checkout(products):
+    wallet=WALLET
+    prices={p["slug"]:float(p["price"]) for p in products}
+    labels={p["slug"]:p["title"] for p in products}
+    data=json.dumps({"prices":prices,"labels":labels},ensure_ascii=False)
+    html="""<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>EarnAgent USDC Checkout</title>
+<style>body{font:16px system-ui,sans-serif;margin:0;background:#101820;color:#f5f1e8}main{max-width:760px;margin:auto;padding:28px}.card{background:#18252e;padding:22px;border-radius:16px;margin:16px 0}code{display:block;overflow-wrap:anywhere;padding:12px;background:#24333d;border-radius:8px}.cta{display:inline-block;padding:11px 14px;background:#d8f3dc;color:#10201b;border-radius:9px;text-decoration:none;border:0}small{opacity:.8}</style></head>
+<body><main><h1>EarnAgent checkout</h1><div class="card"><h2 id="product">Product</h2><p>Price: <b id="amount">—</b> USDC</p><p>Network: <b id="network">Base</b></p><p>Send the exact amount to:</p><code id="wallet"></code><button class="cta" onclick="navigator.clipboard&&navigator.clipboard.writeText(wallet.textContent)">Copy address</button><p><small>Only matching on-chain USDC transfers to this address are counted as paid. Verification is performed automatically by EarnAgent.</small></p></div><p><a href="store/" style="color:#b9e4ff">Back to store</a></p>
+<script>
+const catalog=CATALOG;const qs=new URLSearchParams(location.search);const key=qs.get("product")||Object.keys(catalog.prices)[0];const nets={base:"Base",arbitrum:"Arbitrum One",polygon:"Polygon PoS",optimism:"Optimism"};const n=qs.get("network")||"base";
+document.getElementById("product").textContent=catalog.labels[key]||"EarnAgent product";document.getElementById("amount").textContent=Number(catalog.prices[key]||0).toFixed(2);document.getElementById("network").textContent=nets[n]||"Base";document.getElementById("wallet").textContent="WALLET";
+</script></main></body></html>"""
+    html=html.replace("CATALOG",data).replace("WALLET",wallet)
+    Path("pay.html").write_text(html,encoding="utf-8")
+
 def render_discovery_files(products):
     """Create search-engine discovery assets for the static storefront."""
     slugs=[p["slug"] for p in products]
@@ -158,6 +174,7 @@ def main():
         products.append(q)
     lemon_state=lemon_commercial_state()
     render_store(products,lemon_state)
+    render_direct_checkout(products)
     render_discovery_files(products)
     payload={"generated_at":datetime.now(timezone.utc).isoformat(),
              "products_generated":len(products),
