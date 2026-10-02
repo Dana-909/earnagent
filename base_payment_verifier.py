@@ -27,7 +27,7 @@ def main():
      tx=log.get("transactionHash"); key=name+":"+str(tx)
      if not tx or key in seen: continue
      amount=int((log.get("data") or "0x0")[2:],16)/1000000; product=next((p for p,v in PRICES.items() if abs(amount-v)<0.000001),None)
-     if product: transfers.append({"tx_hash":tx,"network":name,"product":product,"amount_usd":amount,"block":int(log.get("blockNumber","0x0"),16),"verified":True})
+     if product: transfers.append({"tx_hash":tx,"network":name,"product":product,"amount_usd":amount,"block":int(log.get("blockNumber","0x0"),16),"verified":True,"status":"paid_unclaimed"})
      seen.add(key)
    blocks[name]=latest
   except Exception as e: print(json.dumps({"network":name,"error":str(e)[:200]}))
