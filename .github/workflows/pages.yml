@@ -180,6 +180,8 @@ jobs:
           rm -rf public_site
           mkdir -p public_site/store
           cp -R store/. public_site/store/
+          cp store/robots.txt public_site/robots.txt
+          cp store/sitemap.xml public_site/sitemap.xml
           cat > public_site/index.html <<'HTML'
           <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0; url=store/"><title>EarnAgent Store</title></head><body><a href="store/">Open EarnAgent Store</a></body></html>
           HTML
