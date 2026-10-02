@@ -119,7 +119,6 @@ def main():
                 if decision in ("skip","hold"):
                     out["skipped"].append({"id":task_id,"reason":"office_decision_"+str(decision)})
                     continue
- out.setdefault("office_reviews",[]).append({"id":task_id,"roles":office.get("office_roles",[]),"model":office.get("model"),"decision":office.get("decision") or office.get("recommendation")})
             ok,meta=deterministic_deliverable(desc,fmt,path)
             if not ok: ok,meta=ai(desc,fmt,path)
             if not ok: out["skipped"].append({"id":task_id,"reason":meta}); continue
