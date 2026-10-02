@@ -141,6 +141,15 @@ def choose_catalog_plan():
             if not any(p["slug"]==ai["slug"] for p in base): base.append(ai)
     return base
 
+def render_discovery_files(products):
+    """Create search-engine discovery assets for the static storefront."""
+    slugs=[p["slug"] for p in products]
+    (ROOT/"robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: /sitemap.xml\n",encoding="utf-8")
+    urls=["/store/"]+[f"/store/products/{s}.{k}" for p in products for s,k in [(p["slug"],p["kind"])]]
+    xml=["<?xml version="1.0" encoding="UTF-8"?>","<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">"]
+    for u in urls: xml.append(f"<url><loc>{u}</loc></url>")
+    xml.append("</urlset>")
+    (ROOT/"sitemap.xml").write_text("\n".join(xml),encoding="utf-8")
 def main():
     products=[]
     for p in choose_catalog_plan():
@@ -149,6 +158,7 @@ def main():
         products.append(q)
     lemon_state=lemon_commercial_state()
     render_store(products,lemon_state)
+    render_discovery_files(products)
     payload={"generated_at":datetime.now(timezone.utc).isoformat(),
              "products_generated":len(products),
              "catalog_value_usd":round(sum(p["price"] for p in products),2),
