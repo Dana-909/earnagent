@@ -127,4 +127,5 @@ def collaborate(task, fmt):
         "production": context.get("Producer"),
         "audit": context.get("Auditor"),
     }
+    remember(task, fmt, fixed)
     return fixed
