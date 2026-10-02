@@ -13,6 +13,35 @@ TOOLS=[
 
 
 
+ACQUISITION_GUIDES=[
+ ("invoice-template-freelancer","Invoice Template for Freelancers","A practical browser-first workflow for creating quotes and estimating invoice totals. Start free, then use the reusable invoice kit.","invoice-estimator.html","freelancer-invoice-kit"),
+ ("invoice-quote-small-business","Invoice and Quote Workflow for Small Businesses","Estimate project totals quickly and keep a repeatable quote workflow instead of rebuilding documents from scratch.","invoice-estimator.html","freelancer-invoice-kit"),
+ ("kpi-calculator-small-business","Small Business KPI Calculator","Calculate conversion rate, revenue per lead and ROAS from four simple inputs.","kpi-checker.html","small-business-kpi-dashboard"),
+ ("lead-conversion-calculator","Lead Conversion Calculator","Turn lead and customer counts into a quick conversion benchmark you can use for weekly reviews.","kpi-checker.html","small-business-kpi-dashboard"),
+ ("job-application-tracker-free","Free Job Application Tracker","Track company, role, stage and follow-up notes privately in your browser.","job-tracker-lite.html","job-application-tracker"),
+ ("interview-follow-up-tracker","Interview Follow-Up Tracker","Keep interview follow-ups organized and reduce the chance of losing track of the next action.","job-tracker-lite.html","job-application-tracker"),
+ ("creator-content-planner","Creator Content Planner","Use a simple planning workflow to turn a blank month into a repeatable publishing calendar.","invoice-estimator.html","content-calendar-kit"),
+ ("freelancer-client-workflow","Freelancer Client Workflow","A lightweight workflow for keeping project notes, amounts and deliverables organized.","invoice-estimator.html","freelancer-invoice-kit"),
+ ("contractor-project-risk","Contractor Project Risk Checklist","A compact workflow for scope, milestones and project risks before work gets expensive.","kpi-checker.html","project-planning-kit"),
+ ("small-team-project-planner","Small Team Project Planner","Organize objectives, actions, owners and review notes without a heavyweight project system.","kpi-checker.html","project-planning-kit"),
+ ("designer-social-assets","Minimal Social Icons for Designers","Preview a lightweight original SVG asset pack for common interface work.","job-tracker-lite.html","svg-social-icon-pack"),
+ ("business-dashboard-template","Small Business Dashboard Template","Start with a simple KPI workflow and upgrade to a reusable dashboard kit when needed.","kpi-checker.html","small-business-kpi-dashboard"),
+]
+
+def build_acquisition_guides():
+    n=ROOT/"guides"; n.mkdir(parents=True,exist_ok=True)
+    for slug,title,desc,free_slug,product_slug in ACQUISITION_GUIDES:
+        body=f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{html.escape(title)} — EarnAgent</title><meta name="description" content="{html.escape(desc)}">
+<style>body{{font:16px system-ui;margin:0;background:#f4f1ea;color:#18242b}}main{{max-width:860px;margin:30px auto;padding:30px;background:#fff;border-radius:18px}}.box{{background:#eef5f8;padding:20px;border-radius:14px}}a.cta{{display:inline-block;padding:11px 15px;background:#18242b;color:#fff;text-decoration:none;border-radius:9px;margin-right:8px}}</style></head><body><main>
+<h1>{html.escape(title)}</h1><p>{html.escape(desc)}</p><div class="box"><h2>Start with the free tool</h2><p>Try the browser tool first. No account is required for the basic workflow.</p><a class="cta" href="../free/{html.escape(free_slug)}">Open free tool</a><a class="cta" href="../index.html">View paid kits</a></div>
+<h2>Why this workflow?</h2><p>The goal is to reduce repetitive setup and make a useful result available quickly. If the free workflow is useful, the related paid kit adds a reusable version for repeated work.</p>
+<h2>Simple workflow</h2><ol><li>Open the free tool.</li><li>Use it on one real task.</li><li>Keep the result if it saves time.</li><li>Upgrade only if you need the reusable kit.</li></ol>
+<p><small>EarnAgent digital products are independent tools and templates. Results depend on your own use and circumstances.</small></p></main></body></html>"""
+        (n/(slug+".html")).write_text(body,encoding="utf-8")
+    links="".join("<li><a href='"+x[0]+".html'>"+html.escape(x[1])+"</a></li>" for x in ACQUISITION_GUIDES)
+    (n/"index.html").write_text("<!doctype html><meta charset='utf-8'><title>EarnAgent practical guides</title><h1>Practical guides and free tools</h1><ul>"+links+"</ul>",encoding="utf-8")
+
 NICHE_PAGES=[
  ("freelancer-invoice","Free Invoice Template for Freelancers","Create a clean quote and invoice workflow in minutes. Use the free estimator, then upgrade to the reusable Freelancer Invoice & Quote Kit.","invoice-estimator.html","freelancer-invoice-kit","Freelancer Invoice & Quote Kit","$7"),
  ("small-business-kpi","Small Business KPI Dashboard","Track leads, conversion, revenue per lead and marketing efficiency with a simple browser workflow.","kpi-checker.html","small-business-kpi-dashboard","Small Business KPI Dashboard","$9"),
@@ -73,9 +102,10 @@ if index.exists():
 
 (FREE/"index.html").write_text("<!doctype html><meta charset='utf-8'><title>Free EarnAgent tools</title><h1>Free EarnAgent tools</h1><ul>"+''.join(links)+"</ul>",encoding="utf-8")
 build_niche_pages()
+build_acquisition_guides()
 # Publish a fresh crawl map after all generated acquisition pages exist.
-base_urls=["store/","store/free/","store/niches/"]+[("store/free/"+x[0]+".html") for x in TOOLS]+[("store/niches/"+x[0]+".html") for x in NICHE_PAGES]
+base_urls=["store/","store/free/","store/niches/"]+[("store/free/"+x[0]+".html") for x in TOOLS]+[("store/niches/"+x[0]+".html") for x in NICHE_PAGES]+["store/guides/"]+[("store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
 xml="<?xml version=\"1.0\" encoding=\"UTF-8\"?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"+"".join("<url><loc>"+html.escape(u)+"</loc></url>" for u in base_urls)+"</urlset>"
 (ROOT/"sitemap.xml").write_text(xml,encoding="utf-8")
 (ROOT/"robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: sitemap.xml\n",encoding="utf-8")
-print({"free_tools_and_niche_pages":len(TOOLS),"niche_pages":len(NICHE_PAGES),"status":"built"})
+print({"free_tools_and_niche_pages":len(TOOLS),"niche_pages":len(NICHE_PAGES),"acquisition_guides":len(ACQUISITION_GUIDES),"status":"built"})
