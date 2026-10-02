@@ -32,6 +32,12 @@ jobs:
           if bad in s:
               p.write_text(s.replace(bad,good))
           compile(p.read_text(),"sales_engine.py","exec")
+          q=Path("scanner.py")
+          ss=q.read_text()
+          if "scout_channel_strategy(name, rows)" not in ss:
+              ss=ss.replace("  for i in rows:\n","  scout_channel_strategy(name, rows)\n  for i in rows:\n",1)
+              q.write_text(ss)
+          compile(q.read_text(),"scanner.py","exec")
           PY
       - name: Install Taskmarket CLI
         run: npm install -g @lucid-agents/taskmarket@latest
