@@ -71,7 +71,7 @@ def ai(desc,fmt,path):
     path.write_text(text,encoding="utf-8")
     return True,{"bytes":path.stat().st_size,"model":MODEL}
 def main():
-    out={"status":"ok","actions_seen":0,"claims":0,"submitted":0,"ai_generated":0,"settlement_pending":0,"verified_revenue_usd":0,"errors":[],"skipped":[],"office_roles":["Scout","Strategist","Producer","Auditor"]}
+    out={"status":"ok","actions_seen":0,"claims":0,"submitted":0,"ai_generated":0,"settlement_pending":0,"verified_revenue_usd":0,"errors":[],"skipped":[],"office_roles":["Scout","Strategist","Producer","Auditor","Executor","Fixer"]}
     try: out["wallet"]=cli("address")
     except Exception as e: out["errors"].append({"stage":"address","error":str(e)})
     try: acts=rows(cli("actions"))
