@@ -81,11 +81,42 @@ def ai_generate(desc, fmt, path):
     return True, {"model":model,"bytes":path.stat().st_size}
 
 def main():
-    report={"checked":[],"submitted":[],"awards":[],"errors":[],"verified_revenue_usd":0}
+    report={"checked":[],"submitted":[],"claimed":[],"ai_generated":[],"awards":[],"errors":[],"verified_revenue_usd":0}
     try: report["wallet"]=cli("address")
     except Exception as e: report["errors"].append({"stage":"address","error":str(e)})
     try: ts=(cli("task","list","--status","open","--limit","100") or {}).get("tasks",[])
     except Exception as e: report["errors"].append({"stage":"list","error":str(e)}); ts=[]
+    # 2) AI-backed adapter for new claim/bounty tasks with safe self-contained deliverables.
+    for t in ts:
+        if t.get("id") in submitted_ids or t.get("stakeRequired") or not t.get("escrowTxHash"): continue
+        if t.get("mode") not in ("bounty","claim") or not t.get("submissionWindowOpen"): continue
+        try:
+            d=cli("task","get",t["id"]) or {}
+            fmt=choose_ai_format(task_text(t))
+            acts=d.get("pendingActions") or []
+            submit=next((a for a in acts if a.get("role")=="worker" and a.get("action")=="submit" and not a.get("requiresPayment")),None)
+            if not fmt: continue
+            if t.get("mode")=="claim" and not submit:
+                claim=next((a for a in acts if a.get("role")=="worker" and a.get("action")=="claim" and not a.get("requiresPayment")),None)
+                if not claim: continue
+                if claim.get("eligibleAddress") and addr and claim["eligibleAddress"].lower()!=addr.lower(): continue
+                cli("task","claim",t["id"])
+                report["claimed"].append(t["id"])
+                d=cli("task","get",t["id"]) or {}
+                submit=next((a for a in d.get("pendingActions",[]) if a.get("role")=="worker" and a.get("action")=="submit" and not a.get("requiresPayment")),None)
+            if not submit: continue
+            ext={"html":"html","svg":"svg","markdown":"md"}[fmt]
+            path=OUT/(t["id"]+"."+ext)
+            ok,meta=ai_generate(task_text(t),fmt,path)
+            if not ok: continue
+            if path.stat().st_size>500000: raise ValueError("generated deliverable exceeds 500KB")
+            low=path.read_text(encoding="utf-8").lower()
+            if fmt in ("html","svg") and ("<foreignobject" in low or "<iframe" in low): raise ValueError("external/embed content prohibited")
+            out=cli("task","submit",t["id"],"--file",str(path))
+            report["submitted"].append({"id":t["id"],"title":task_text(t).splitlines()[0],"submission":out,"verification":{"verified":True,"ai":meta}})
+            report["ai_generated"].append({"id":t["id"],"format":fmt,"reward_usd":int(t.get("reward","0"))/1e6})
+        except Exception as e:
+            report["errors"].append({"stage":"ai-task","id":t.get("id"),"error":str(e)[:500]})
     try: mine=cli("task","my-submissions") or []
     except Exception as e: report["errors"].append({"stage":"my-submissions","error":str(e)}); mine=[]
     for t in ts:
@@ -116,6 +147,6 @@ def main():
     report["verified_revenue_usd"]=round(sum(int(a.get("workerPayment","0") or 0)/1e6 for a in report["awards"] if a.get("settlementTxHash")),6)
     report["status"]="ok" if not report["errors"] else "partial"
     STATE.write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding="utf-8")
-    print(json.dumps({"status":report["status"],"checked":len(report["checked"]),"submitted":len(report["submitted"]),"awards":len(report["awards"]),"verified_revenue_usd":report["verified_revenue_usd"],"errors":len(report["errors"])}))
+    print(json.dumps({"status":report["status"],"checked":len(report["checked"]),"submitted":len(report["submitted"]),"claimed":len(report["claimed"]),"ai_generated":len(report["ai_generated"]),"awards":len(report["awards"]),"verified_revenue_usd":report["verified_revenue_usd"],"errors":len(report["errors"])}))
 
 if __name__=="__main__": main()
