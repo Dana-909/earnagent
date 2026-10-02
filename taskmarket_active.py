@@ -110,7 +110,7 @@ def main():
                 t=cli("task","get",task_id) or {}
                 submit=next((a for a in (t.get("pendingActions") or []) if free(a,"submit")),None)
             if not submit or ai_count>=MAX_AI: continue
-            ai_count+=1; ext={"html":"html","svg":"svg","md":"md"}[fmt]; path=OUT/("auto_"+task_id+"."+ext)\n            office=collaborate(desc,fmt) if fmt=="md" else None\n            if office: out.setdefault("office_reviews",[]).append({"id":task_id,"roles":office.get("office_roles",[]),"decision":office.get("decision") or office.get("recommendation")})
+            ai_count+=1; ext={"html":"html","svg":"svg","md":"md"}[fmt]; path=OUT/("auto_"+task_id+"."+ext)\n            office=collaborate({"description":desc,"reward_usd":float(t.get("reward") or 0)/1000000,"mode":mode,"task_id":task_id},fmt)\n            if office: out.setdefault("office_reviews",[]).append({"id":task_id,"roles":office.get("office_roles",[]),"model":office.get("model"),"decision":office.get("decision") or office.get("recommendation")})
             ok,meta=deterministic_deliverable(desc,fmt,path)
             if not ok: ok,meta=ai(desc,fmt,path)
             if not ok: out["skipped"].append({"id":task_id,"reason":meta}); continue
