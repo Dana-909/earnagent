@@ -9,7 +9,8 @@ def choose_model(task, fmt):
     if reward >= 5 or complexity >= 12000:
         return os.environ.get("EARNAGENT_FRONTIER_MODEL","gpt-6-astra")
     return os.environ.get("EARNAGENT_EXECUTOR_MODEL","gpt-6-sol")
-EXECUTOR_ROLE={"name":"Executor","job":"act as the senior universal worker: synthesize the office findings, solve difficult technical/creative/business work, produce the final executable deliverable, and optimize for acceptance and verified payment"}\nROLES=[
+EXECUTOR_ROLE={"name":"Executor","job":"act as the senior universal worker: synthesize the office findings, solve difficult technical/creative/business work, produce the final executable deliverable, and optimize for acceptance and verified payment"}
+ROLES=[
  {"name":"Scout","job":"continuously discover new legitimate revenue channels, jobs, bounties and product opportunities; invent new ways to reach real buyers; estimate reward, competition, execution cost, payout proof and repeatability; propose the best new opportunities to the Executor"},
  {"name":"Strategist","job":"select the highest expected-value execution path using reward, competition, acceptance criteria and time"},
  {"name":"Producer","job":"design the smallest high-quality deliverable that directly satisfies the task"},
