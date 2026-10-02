@@ -77,10 +77,11 @@ def main():
         try:
             d=cli("task","get",task_id) or {}
             for a in d.get("awards") or []:
-                if a not in report["awards"]: report["awards"].append(a)
+                if str(a.get("workerAddress","")).lower()==str((report.get("wallet") or {}).get("address","")).lower() and a not in report["awards"]:
+                    report["awards"].append(a)
         except Exception as e:
             report["errors"].append({"stage":"award","id":task_id,"error":str(e)[:300]})
-    report["verified_revenue_usd"]=round(sum(int(a.get("amount","0") or 0)/1e6 for a in report["awards"]),6)
+    report["verified_revenue_usd"]=round(sum(int(a.get("workerPayment","0") or 0)/1e6 for a in report["awards"] if a.get("settlementTxHash")),6)
     report["status"]="ok" if not report["errors"] else "partial"
     STATE.write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding="utf-8")
     print(json.dumps({"status":report["status"],"checked":len(report["checked"]),"submitted":len(report["submitted"]),"awards":len(report["awards"]),"verified_revenue_usd":report["verified_revenue_usd"],"errors":len(report["errors"])}))
