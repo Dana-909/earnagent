@@ -93,7 +93,7 @@ jobs:
           EARNAGENT_MODEL: gpt-5.6-luna
         run: python3 taskmarket_worker.py
       - name: Run safety tests
-        run: python3 -m unittest -v test_worker.py test_verifier.py test_submitter.py test_ledger.py test_runner.py test_taskmarket_worker.py
+        run: python3 -m unittest -v test_worker.py test_verifier.py test_submitter.py test_ledger.py test_runner.py test_taskmarket_worker.py test_taskmarket_active.py
       - name: Validate end-to-end safety orchestration
         run: python3 runner.py
       - name: Run autonomous earning scout
