@@ -32,6 +32,8 @@ def kind(desc):
     if any(x in d for x in blocked): return None
     if "self-contained" in d and "html" in d: return "html"
     if "self-contained" in d and "svg" in d: return "svg"
+    if "bubble's borrowed rainbow" in d: return "svg"
+    if "mini-atlas" in d and "spiral" in d: return "svg"
     if any(x in d for x in ("article","blog post","essay","report","research summary","documentation","readme","markdown","plain text","copywriting")): return "md"
     return None
 
