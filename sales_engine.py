@@ -92,6 +92,21 @@ def render_store(products, lemon_state):
     html='''<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EarnAgent Digital Store</title><style>body{font:16px system-ui;margin:0;background:#101820;color:#f5f1e8}main{max-width:1050px;margin:auto;padding:30px}article{background:#18252e;padding:22px;margin:16px 0;border-radius:16px}a{color:#b9e4ff}.pay{background:#24333d;padding:14px;border-radius:10px}code{overflow-wrap:anywhere}</style></head><body><main><h1>EarnAgent Digital Store</h1><p>Original downloadable tools, templates and assets.</p>'''+''.join(cards)+'''</main></body></html>'''
     (ROOT/"index.html").write_text(html,encoding="utf-8")
 
+def ai_product_variant(seed):
+    key=os.getenv("OPENAI_API_KEY")
+    if not key: return None
+    try:
+        payload={"model":os.getenv("EARNAGENT_MODEL","gpt-5.6-luna"),"input":[{"role":"system","content":"Return ONLY JSON with slug,title,price,kind,pitch,content. Create one original safe digital product variant. Allowed kind: html, md, svg. No external URLs, accounts, credentials, payments, spam, impersonation or copyrighted copying. Price 4-29 USD."},{"role":"user","content":json.dumps(seed,ensure_ascii=False)}]}
+        req=urllib.request.Request("https://api.openai.com/v1/responses",data=json.dumps(payload).encode(),headers={"Authorization":"Bearer "+key,"Content-Type":"application/json"})
+        with urllib.request.urlopen(req,timeout=45) as r: out=json.loads(r.read().decode())
+        p=json.loads(out.get("output_text","").strip())
+        if p.get("kind") not in ("html","md","svg") or not p.get("slug") or not p.get("title") or not p.get("pitch") or not p.get("content"): return None
+        p["price"]=max(4.0,min(29.0,float(p.get("price",7))))
+        low=p["content"].lower()
+        if "http://" in low or "https://" in low or "<iframe" in low or "<foreignobject" in low or len(p["content"].encode())>500000: return None
+        return p
+    except Exception: return None
+
 def load_verified_sales():
     try:
         data=json.loads(STATE.read_text()) if STATE.exists() else {}
