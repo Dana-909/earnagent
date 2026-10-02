@@ -98,7 +98,8 @@ def main():
         try:
             t=cli("task","get",task_id) or {}
             mode=str(t.get("mode","")).lower()
-            if mode not in ("claim","bounty") or t.get("stakeRequired") or not t.get("escrowTxHash"): continue\n            if mode=="bounty" and t.get("submissionWindowOpen") is False: continue
+            if mode not in ("claim","bounty") or t.get("stakeRequired") or not t.get("escrowTxHash"): continue
+            if mode=="bounty" and t.get("submissionWindowOpen") is False: continue
             if t.get("status") not in ("open","claimed","pending_approval"): continue
             desc=str(t.get("description") or "").strip(); fmt=kind(desc)
             if not fmt: continue
@@ -110,7 +111,15 @@ def main():
                 t=cli("task","get",task_id) or {}
                 submit=next((a for a in (t.get("pendingActions") or []) if free(a,"submit")),None)
             if not submit or ai_count>=MAX_AI: continue
-            ai_count+=1; ext={"html":"html","svg":"svg","md":"md"}[fmt]; path=OUT/("auto_"+task_id+"."+ext)\n            office=collaborate({"description":desc,"reward_usd":float(t.get("reward") or 0)/1000000,"mode":mode,"task_id":task_id},fmt)\n            if office:\n                decision=office.get("decision") or office.get("recommendation")\n                out.setdefault("office_reviews",[]).append({"id":task_id,"roles":office.get("office_roles",[]),"model":office.get("model"),"decision":decision,"fixer":office.get("fixer")})\n                if decision in ("skip","hold"):\n                    out["skipped"].append({"id":task_id,"reason":"office_decision_"+str(decision)})\n                    continue\n out.setdefault("office_reviews",[]).append({"id":task_id,"roles":office.get("office_roles",[]),"model":office.get("model"),"decision":office.get("decision") or office.get("recommendation")})
+            ai_count+=1; ext={"html":"html","svg":"svg","md":"md"}[fmt]; path=OUT/("auto_"+task_id+"."+ext)
+            office=collaborate({"description":desc,"reward_usd":float(t.get("reward") or 0)/1000000,"mode":mode,"task_id":task_id},fmt)
+            if office:
+                decision=office.get("decision") or office.get("recommendation")
+                out.setdefault("office_reviews",[]).append({"id":task_id,"roles":office.get("office_roles",[]),"model":office.get("model"),"decision":decision,"fixer":office.get("fixer")})
+                if decision in ("skip","hold"):
+                    out["skipped"].append({"id":task_id,"reason":"office_decision_"+str(decision)})
+                    continue
+ out.setdefault("office_reviews",[]).append({"id":task_id,"roles":office.get("office_roles",[]),"model":office.get("model"),"decision":office.get("decision") or office.get("recommendation")})
             ok,meta=deterministic_deliverable(desc,fmt,path)
             if not ok: ok,meta=ai(desc,fmt,path)
             if not ok: out["skipped"].append({"id":task_id,"reason":meta}); continue
@@ -118,7 +127,8 @@ def main():
                 out["skipped"].append({"id":task_id,"reason":"no_free_submit_action"})
                 continue
             result=cli("task","submit",task_id,"--file",str(path))
-            out["submitted"]+=1\n            if meta.get("model")==MODEL: out["ai_generated"]+=1
+            out["submitted"]+=1
+            if meta.get("model")==MODEL: out["ai_generated"]+=1
             out.setdefault("submissions",[]).append({"id":task_id,"mode":mode,"reward_usd":float(t.get("reward") or 0)/1000000,"result":result})
         except Exception as e: out["errors"].append({"stage":"execute","id":task_id,"error":str(e)[:500]})
     try:
