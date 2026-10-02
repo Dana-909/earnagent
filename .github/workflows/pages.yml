@@ -87,6 +87,11 @@ jobs:
           EARNAGENT_MAX_ACTIONS: "16"
           EARNAGENT_MAX_AI: "10"
         run: python3 taskmarket_active.py
+      - name: Report action-first result
+        run: |
+          echo '--- taskmarket_active.json ---'
+          cat data/taskmarket_active.json
+          echo '--- end ---'
       - name: Run autonomous Taskmarket worker
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
