@@ -83,7 +83,7 @@ jobs:
       - name: Run action-first autonomous Taskmarket worker
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          EARNAGENT_MODEL: gpt-5.6-luna
+          EARNAGENT_MODEL: gpt-5.6-luna\n          EARNAGENT_EXECUTOR_MODEL: gpt-6.1-sol
           EARNAGENT_MAX_ACTIONS: "16"
           EARNAGENT_MAX_AI: "3"
         run: python3 taskmarket_active.py
