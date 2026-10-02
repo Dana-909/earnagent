@@ -72,12 +72,14 @@ def main():
     try: mine=cli("task","my-submissions") or []
     except Exception as e: report["errors"].append({"stage":"my-submissions-final","error":str(e)})
     report["my_submissions"]=[{k:x.get(k) for k in ("taskId","taskStatus","taskReward","submittedAt","submitTxHash","deliverableHash")} for x in mine]
-    for t in ts:
-        if any(x.get("taskId")==t.get("id") for x in mine):
-            try:
-                d=cli("task","get",t["id"]) or {}
-                report["awards"].extend(d.get("awards") or [])
-            except Exception as e: report["errors"].append({"stage":"award","id":t.get("id"),"error":str(e)[:300]})
+    tracked_ids={x.get("taskId") for x in mine if x.get("taskId")}
+    for task_id in tracked_ids:
+        try:
+            d=cli("task","get",task_id) or {}
+            for a in d.get("awards") or []:
+                if a not in report["awards"]: report["awards"].append(a)
+        except Exception as e:
+            report["errors"].append({"stage":"award","id":task_id,"error":str(e)[:300]})
     report["verified_revenue_usd"]=round(sum(int(a.get("amount","0") or 0)/1e6 for a in report["awards"]),6)
     report["status"]="ok" if not report["errors"] else "partial"
     STATE.write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding="utf-8")
