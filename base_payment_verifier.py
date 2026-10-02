@@ -31,8 +31,8 @@ def main():
      seen.add(key)
    blocks[name]=latest
   except Exception as e: print(json.dumps({"network":name,"error":str(e)[:200]}))
-old=state.get("verified_transfers",[]); known={(x.get("network"),x.get("tx_hash")) for x in old}
-state={"last_blocks":blocks,"tx_keys":list(seen)[-10000:],"verified_transfers":old+[x for x in transfers if (x["network"],x["tx_hash"]) not in known]}
-STATE.parent.mkdir(exist_ok=True); STATE.write_text(json.dumps(state,separators=(",",":")))
-print(json.dumps({"networks":list(NETWORKS),"new_sales":len(transfers),"verified_sales":len(state["verified_transfers"]),"verified_revenue_usd":round(sum(x["amount_usd"] for x in state["verified_transfers"]),2)}))
-if __name__=="__main__": main()
+ old=state.get("verified_transfers",[]); known={(x.get("network"),x.get("tx_hash")) for x in old}
+ state={"last_blocks":blocks,"tx_keys":list(seen)[-10000:],"verified_transfers":old+[x for x in transfers if (x["network"],x["tx_hash"]) not in known]}
+ STATE.parent.mkdir(exist_ok=True); STATE.write_text(json.dumps(state,separators=(",",":")))
+ print(json.dumps({"networks":list(NETWORKS),"new_sales":len(transfers),"verified_sales":len(state["verified_transfers"]),"verified_revenue_usd":round(sum(x["amount_usd"] for x in state["verified_transfers"]),2)}))
+ if __name__=="__main__": main()
