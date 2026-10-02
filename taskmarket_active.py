@@ -52,6 +52,9 @@ def main():
     except Exception as e: acts=[]; out["errors"].append({"stage":"actions","error":str(e)})
     try: inbox=rows(cli("inbox"))
     except Exception as e: inbox=[]; out["errors"].append({"stage":"inbox","error":str(e)})
+    try: mine=rows(cli("task","my-submissions"))
+    except Exception as e: mine=[]; out["errors"].append({"stage":"my-submissions","error":str(e)})
+    submitted_ids={str(x.get("taskId")) for x in mine if x.get("taskId")}
     candidates={}
     for mode in ("claim","bounty"):
         try:
@@ -63,6 +66,7 @@ def main():
     out["actions_seen"]=len(acts)
     ai_count=0
     for task_id in list(candidates)[:MAX_ACTIONS]:
+        if str(task_id) in submitted_ids: continue
         try:
             t=cli("task","get",task_id) or {}
             mode=str(t.get("mode","")).lower()
