@@ -6,7 +6,7 @@ Scout -> Strategist -> Producer -> Auditor -> Executor -> Fixer.
 Each role receives the previous role's output. The Executor is the final
 decision-maker for the task, while the Fixer is a narrow safety/structure gate.
 """
-import json, os, urllib.request
+import json, os, urllib.request, time
 from pathlib import Path
 from office_fixer import repair
 from office_memory import context as memory_context, remember
@@ -97,7 +97,7 @@ def collaborate(task, fmt):
     if not os.environ.get("OPENAI_API_KEY"):
         return None
 
-    context = {}
+    context = {"prior_memory": memory_context(task, fmt) or {}, "office_mandate": {"primary_goal": "generate verified revenue, not bounty activity or simulations", "bounty_is_secondary": True, "require_new_revenue_channels": True, "preferred_channels": ["digital product sales", "marketplaces", "free-tool-to-paid-upgrade"], "success_metric": "verified_paid_order_or_settled_reward"}}
     models = {}
     ai_stages = 0
     for role in ("Scout", "Strategist", "Producer", "Auditor"):
