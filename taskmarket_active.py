@@ -16,7 +16,16 @@ def rows(x):
             if isinstance(x.get(k),list): return x[k]
     return x if isinstance(x,list) else []
 def tid(x): return str(x.get("taskId") or x.get("task_id") or x.get("id") or "")
-def free(a,name): return str(a.get("action","")).lower()==name and not a.get("requiresPayment") and float(a.get("costUsd") or a.get("cost") or 0)==0
+def free(a,name):
+    return str(a.get("action","")).lower()==name and not a.get("requiresPayment") and float(a.get("costUsd") or a.get("cost") or 0)==0
+
+def priority(t):
+    try:
+        reward=float(t.get("reward") or 0)/1000000
+        submissions=float(t.get("submissionCount") or 0)
+        return (reward/(1.0+submissions), reward, -submissions)
+    except Exception:
+        return (0,0,0)
 def kind(desc):
     d=desc.lower()
     blocked=("api key","secret","password","sign in","login","kyc","phone call","purchase","deposit","pay a fee","external account","credential","private key","impersonat","send an email")
@@ -76,7 +85,9 @@ def main():
         if tid(a): candidates.setdefault(tid(a),a)
     out["actions_seen"]=len(acts)
     ai_count=0
-    for task_id in list(candidates)[:MAX_ACTIONS]:
+    ranked=sorted(candidates.items(), key=lambda kv: priority(kv[1]), reverse=True)
+    out["ranked_candidates"]=[{"id":k,"reward_usd":round(float(v.get("reward") or 0)/1000000,2),"submissions":v.get("submissionCount",0),"mode":v.get("mode")} for k,v in ranked[:MAX_ACTIONS]]
+    for task_id,_summary in ranked[:MAX_ACTIONS]:
         if str(task_id) in submitted_ids: continue
         try:
             t=cli("task","get",task_id) or {}
@@ -87,8 +98,6 @@ def main():
             if not fmt: continue
             pending=t.get("pendingActions") or []
             submit=next((a for a in pending if free(a,"submit")),None)
-            if not submit and mode=="bounty" and task_id not in submitted_ids:
-                submit={"action":"submit","requiresPayment":False,"costUsd":0}
             claim=next((a for a in pending if free(a,"claim")),None)
             if mode=="claim" and not submit and claim:
                 cli("task","claim",task_id); out["claims"]+=1
@@ -99,6 +108,9 @@ def main():
             ok,meta=deterministic_deliverable(desc,fmt,path)
             if not ok: ok,meta=ai(desc,fmt,path)
             if not ok: out["skipped"].append({"id":task_id,"reason":meta}); continue
+            if not submit:
+                out["skipped"].append({"id":task_id,"reason":"no_free_submit_action"})
+                continue
             result=cli("task","submit",task_id,"--file",str(path))
             out["submitted"]+=1; out["ai_generated"]+=1
             out.setdefault("submissions",[]).append({"id":task_id,"mode":mode,"reward_usd":float(t.get("reward") or 0)/1000000,"result":result})
@@ -111,7 +123,7 @@ def main():
             if tx and pay is not None: out["verified_revenue_usd"]+=float(pay)/1000000
             elif x.get("taskId"): out["settlement_pending"]+=1
     except Exception as e: out["errors"].append({"stage":"settlement","error":str(e)})
-    out["ai_enabled"]=bool(os.environ.get("OPENAI_API_KEY")); out["paid_actions_used"]=False
+    out["ai_enabled"]=bool(os.environ.get("OPENAI_API_KEY")); out["paid_actions_used"]=False; out["selection_policy"]="reward_per_submission; free_actions_only; exact_pendingActions"
     STATE.write_text(json.dumps(out,ensure_ascii=False,separators=(",",":")),encoding="utf-8")
     print(json.dumps(out,ensure_ascii=False))
 if __name__=="__main__": main()
