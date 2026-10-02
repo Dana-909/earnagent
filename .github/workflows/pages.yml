@@ -104,6 +104,10 @@ jobs:
         run: |
           python3 sales_engine.py | tee sales_engine_run.json
           test -s data/sales_engine.json
+      - name: Update sales experiments
+        run: |
+          python3 sales_optimizer.py | tee sales_optimizer_run.json
+          test -s data/sales_experiments.json
       - name: Run safety tests
         run: python3 -m unittest -v test_worker.py test_verifier.py test_submitter.py test_ledger.py test_runner.py test_taskmarket_worker.py test_taskmarket_active.py test_sales_engine.py
       - name: Validate end-to-end safety orchestration
