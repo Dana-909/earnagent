@@ -134,9 +134,11 @@ def choose_catalog_plan():
         seed=max(winners,key=lambda p:p["verified_revenue_usd"])
         slug=seed["slug"]+"-advanced"
         if not any(p["slug"]==slug for p in base):
-            base.append({"slug":slug,"title":seed["title"]+" — Advanced Pack",
-                         "price":round(max(seed["price"]*1.5,7),2),"kind":seed["kind"],
-                         "pitch":"An expanded version of the proven "+seed["title"]+" with additional workflows, templates and practical examples."})
+            base.append({"slug":slug,"title":seed["title"]+" Advanced Pack","price":round(max(seed["price"]*1.5,7),2),"kind":seed["kind"],"pitch":"Expanded version of the proven "+seed["title"]+" with additional workflows and practical examples."})
+        ai=ai_product_variant(seed)
+        if ai:
+            ai["slug"]=seed["slug"]+"-"+ai["slug"].strip("-")
+            if not any(p["slug"]==ai["slug"] for p in base): base.append(ai)
     return base
 
 def main():
