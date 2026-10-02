@@ -1,5 +1,6 @@
 import json, os, subprocess
-from ai_office import collaborate\nfrom office_memory import remember
+from ai_office import collaborate
+from office_memory import remember
 from pathlib import Path
 OUT=Path("deliverables"); OUT.mkdir(exist_ok=True)
 STATE=Path("data/taskmarket_active.json"); STATE.parent.mkdir(exist_ok=True)
@@ -128,7 +129,8 @@ def main():
             result=cli("task","submit",task_id,"--file",str(path))
             out["submitted"]+=1
             if meta.get("model")==MODEL: out["ai_generated"]+=1
-            out.setdefault("submissions",[]).append({"id":task_id,"mode":mode,"reward_usd":float(t.get("reward") or 0)/1000000,"result":result})\n            if office:\n                office["outcome"]="submitted_pending_settlement"\n                remember({"task_id":task_id,"mode":mode,"reward_usd":float(t.get("reward") or 0)/1000000},fmt,office,"submitted_pending_settlement")
+            out.setdefault("submissions",[]).append({"id":task_id,"mode":mode,"reward_usd":float(t.get("reward") or 0)/1000000,"result":result})
+            if office:\n                office["outcome"]="submitted_pending_settlement"\n                remember({"task_id":task_id,"mode":mode,"reward_usd":float(t.get("reward") or 0)/1000000},fmt,office,"submitted_pending_settlement")
         except Exception as e: out["errors"].append({"stage":"execute","id":task_id,"error":str(e)[:500]})
     try:
         mine=rows(cli("task","my-submissions"))
