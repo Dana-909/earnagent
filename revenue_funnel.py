@@ -66,8 +66,16 @@ if index.exists():
         old=old.split(marker)[0]+block+old.split(marker,1)[1].split("</section>",1)[-1] if "</section>" in old.split(marker,1)[1] else old
     else:
         old=old.replace("</main>",block+"</main>")
+    niche_links="<section><h2>Work-specific guides</h2><p>Free tools and focused workflows for common jobs.</p><ul>"+''.join("<li><a href='niches/"+x[0]+".html'>"+html.escape(x[1])+"</a></li>" for x in NICHE_PAGES)+"</ul></section>"
+    if "</main>" in old:
+        old=old.replace("</main>",niche_links+"</main>")
     index.write_text(old,encoding="utf-8")
 
 (FREE/"index.html").write_text("<!doctype html><meta charset='utf-8'><title>Free EarnAgent tools</title><h1>Free EarnAgent tools</h1><ul>"+''.join(links)+"</ul>",encoding="utf-8")
 build_niche_pages()
-print({"free_tools_and_niche_pages":len(TOOLS),"status":"built"})
+# Publish a fresh crawl map after all generated acquisition pages exist.
+base_urls=["store/","store/free/","store/niches/"]+[("store/free/"+x[0]+".html") for x in TOOLS]+[("store/niches/"+x[0]+".html") for x in NICHE_PAGES]
+xml="<?xml version=\"1.0\" encoding=\"UTF-8\"?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"+"".join("<url><loc>"+html.escape(u)+"</loc></url>" for u in base_urls)+"</urlset>"
+(ROOT/"sitemap.xml").write_text(xml,encoding="utf-8")
+(ROOT/"robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: sitemap.xml\n",encoding="utf-8")
+print({"free_tools_and_niche_pages":len(TOOLS),"niche_pages":len(NICHE_PAGES),"status":"built"})
