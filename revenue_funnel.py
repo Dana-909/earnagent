@@ -105,6 +105,8 @@ build_niche_pages()
 build_acquisition_guides()
 # Publish a fresh crawl map after all generated acquisition pages exist.
 base_urls=["store/","store/free/","store/niches/"]+[("store/free/"+x[0]+".html") for x in TOOLS]+[("store/niches/"+x[0]+".html") for x in NICHE_PAGES]+["store/guides/"]+[("store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+base="https://dana-909.github.io/earnagent/"
+base_urls=[base+"store/",base+"store/free/",base+"store/niches/",base+"store/guides/"]+[(base+"store/free/"+x[0]+".html") for x in TOOLS]+[(base+"store/niches/"+x[0]+".html") for x in NICHE_PAGES]+[(base+"store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
 xml="<?xml version=\"1.0\" encoding=\"UTF-8\"?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"+"".join("<url><loc>"+html.escape(u)+"</loc></url>" for u in base_urls)+"</urlset>"
 (ROOT/"sitemap.xml").write_text(xml,encoding="utf-8")
 (ROOT/"robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: sitemap.xml\n",encoding="utf-8")
