@@ -59,7 +59,7 @@ def choose_ai_format(desc):
     d=desc.lower()
     if "one self-contained offline html file" in d or ("html" in d and "self-contained" in d and "external resources" in d): return "html"
     if "one static self-contained svg" in d or "self-contained svg" in d: return "svg"
-    if ("markdown" in d or ".md" in d or "text file" in d or "plain text" in d) and not any(x in d for x in ("binary","video","image","audio","zip","repository","api key","sign in")): return "markdown"
+    if any(x in d for x in ("article","blog post","written article","essay","review","report","research summary","documentation","readme","markdown",".md","text file","plain text","copywriting")) and not any(x in d for x in ("binary","video","image","audio","zip","repository","api key","sign in","publish","post to","comment on","like and","subscribe","watch")): return "markdown"
     return None
 
 def ai_generate(desc, fmt, path):
@@ -86,6 +86,13 @@ def main():
     except Exception as e: report["errors"].append({"stage":"address","error":str(e)})
     try: ts=(cli("task","list","--status","open","--limit","100") or {}).get("tasks",[])
     except Exception as e: report["errors"].append({"stage":"list","error":str(e)}); ts=[]
+    # Load the wallet-owned submission set before scanning. This makes every cycle idempotent.
+    try:
+        existing_mine=cli("task","my-submissions") or []
+    except Exception as e:
+        report["errors"].append({"stage":"my-submissions-initial","error":str(e)}); existing_mine=[]
+    submitted_ids={str(x.get("taskId")) for x in existing_mine if x.get("taskId")}
+    addr=wallet_address(report.get("wallet"))
     # 2) AI-backed adapter for new claim/bounty tasks with safe self-contained deliverables.
     for t in ts:
         if t.get("id") in submitted_ids or t.get("stakeRequired") or not t.get("escrowTxHash"): continue
@@ -96,6 +103,7 @@ def main():
             acts=d.get("pendingActions") or []
             submit=next((a for a in acts if a.get("role")=="worker" and a.get("action")=="submit" and not a.get("requiresPayment")),None)
             if not fmt: continue
+            if str(t.get("id")) in submitted_ids: continue
             if t.get("mode")=="claim" and not submit:
                 claim=next((a for a in acts if a.get("role")=="worker" and a.get("action")=="claim" and not a.get("requiresPayment")),None)
                 if not claim: continue
@@ -114,6 +122,7 @@ def main():
             if fmt in ("html","svg") and ("<foreignobject" in low or "<iframe" in low): raise ValueError("external/embed content prohibited")
             out=cli("task","submit",t["id"],"--file",str(path))
             report["submitted"].append({"id":t["id"],"title":task_text(t).splitlines()[0],"submission":out,"verification":{"verified":True,"ai":meta}})
+            submitted_ids.add(str(t["id"]))
             report["ai_generated"].append({"id":t["id"],"format":fmt,"reward_usd":int(t.get("reward","0"))/1e6})
         except Exception as e:
             report["errors"].append({"stage":"ai-task","id":t.get("id"),"error":str(e)[:500]})
@@ -140,12 +149,13 @@ def main():
         try:
             d=cli("task","get",task_id) or {}
             for a in d.get("awards") or []:
-                if str(a.get("workerAddress","")).lower()==str((report.get("wallet") or {}).get("address","")).lower() and a not in report["awards"]:
+                if str(a.get("workerAddress","")).lower()==str(addr or "").lower() and a not in report["awards"]:
                     report["awards"].append(a)
         except Exception as e:
             report["errors"].append({"stage":"award","id":task_id,"error":str(e)[:300]})
     report["verified_revenue_usd"]=round(sum(int(a.get("workerPayment","0") or 0)/1e6 for a in report["awards"] if a.get("settlementTxHash")),6)
     report["status"]="ok" if not report["errors"] else "partial"
+    report["execution_policy"]={"free_taskmarket_actions_only":True,"paid_taskmarket_actions":False,"remote_side_effects":False,"ai_optional":True}
     STATE.write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding="utf-8")
     print(json.dumps({"status":report["status"],"checked":len(report["checked"]),"submitted":len(report["submitted"]),"claimed":len(report["claimed"]),"ai_generated":len(report["ai_generated"]),"awards":len(report["awards"]),"verified_revenue_usd":report["verified_revenue_usd"],"errors":len(report["errors"])}))
 
