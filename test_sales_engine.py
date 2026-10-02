@@ -8,5 +8,9 @@ class SalesEngineTests(unittest.TestCase):
         self.assertTrue(all(float(p["price"])>0 for p in sales_engine.PRODUCTS_PLAN))
         self.assertTrue(all(p["kind"] in ("html","md","svg") for p in sales_engine.PRODUCTS_PLAN))
 
+    def test_optimizer_module_imports(self):
+        import sales_optimizer
+        self.assertGreaterEqual(len(sales_optimizer.NICHES), 10)
+
 if __name__=="__main__":
     unittest.main()
