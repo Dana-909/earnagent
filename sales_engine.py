@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 ROOT=Path("store"); PRODUCTS=ROOT/"products"; STATE=Path("data/sales_engine.json")
 PRODUCTS.mkdir(parents=True,exist_ok=True); STATE.parent.mkdir(exist_ok=True)
-WALLET=os.getenv("TASKMARKET_WALLET_ADDRESS","0x948B78F80ba73E846B27171f31E3609b0e399701")
+WALLET=os.getenv("TASKMARKET_WALLET_ADDRESS") or "0x948B78F80ba73E846B27171f31E3609b0e399701"
 BASE_USDC="USDC on Base"
 PRODUCTS_PLAN=[
  {"slug":"freelancer-invoice-kit","title":"Freelancer Invoice & Quote Kit","price":7.00,"kind":"html","pitch":"A clean offline invoice and quote generator for freelancers and small service businesses."},
