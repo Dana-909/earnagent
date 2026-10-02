@@ -1,0 +1,1 @@
+{"networks":[{"name":"Base","chain_id":8453,"asset":"USDC"},{"name":"Arbitrum One","chain_id":42161,"asset":"USDC"},{"name":"Polygon PoS","chain_id":137,"asset":"USDC"},{"name":"Optimism","chain_id":10,"asset":"USDC"}]}
