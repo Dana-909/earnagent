@@ -92,9 +92,41 @@ def render_store(products, lemon_state):
     html='''<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EarnAgent Digital Store</title><style>body{font:16px system-ui;margin:0;background:#101820;color:#f5f1e8}main{max-width:1050px;margin:auto;padding:30px}article{background:#18252e;padding:22px;margin:16px 0;border-radius:16px}a{color:#b9e4ff}.pay{background:#24333d;padding:14px;border-radius:10px}code{overflow-wrap:anywhere}</style></head><body><main><h1>EarnAgent Digital Store</h1><p>Original downloadable tools, templates and assets.</p>'''+''.join(cards)+'''</main></body></html>'''
     (ROOT/"index.html").write_text(html,encoding="utf-8")
 
+def load_verified_sales():
+    try:
+        data=json.loads(STATE.read_text()) if STATE.exists() else {}
+        orders=[o for o in data.get("lemon_squeezy",{}).get("paid_orders",[]) if not o.get("test_mode")]
+        by_name={}
+        for o in orders:
+            name=o.get("product_name")
+            if name:
+                by_name.setdefault(name,{"sales":0,"revenue":0.0})
+                by_name[name]["sales"]+=1
+                by_name[name]["revenue"]+=float(o.get("total_usd",0) or 0)
+        return by_name
+    except Exception:
+        return {}
+
+def choose_catalog_plan():
+    base=list(PRODUCTS_PLAN)
+    sales=load_verified_sales()
+    for p in base:
+        m=sales.get(p["title"],{})
+        p["verified_sales"]=m.get("sales",0)
+        p["verified_revenue_usd"]=round(m.get("revenue",0.0),2)
+    winners=[p for p in base if p["verified_revenue_usd"]>0]
+    if winners:
+        seed=max(winners,key=lambda p:p["verified_revenue_usd"])
+        slug=seed["slug"]+"-advanced"
+        if not any(p["slug"]==slug for p in base):
+            base.append({"slug":slug,"title":seed["title"]+" — Advanced Pack",
+                         "price":round(max(seed["price"]*1.5,7),2),"kind":seed["kind"],
+                         "pitch":"An expanded version of the proven "+seed["title"]+" with additional workflows, templates and practical examples."})
+    return base
+
 def main():
     products=[]
-    for p in PRODUCTS_PLAN:
+    for p in choose_catalog_plan():
         path=write_product(p)
         q=dict(p); q["file"]=str(path); q["sha256"]=hashlib.sha256(path.read_bytes()).hexdigest()
         products.append(q)
