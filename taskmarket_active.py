@@ -1,4 +1,5 @@
 import json, os, subprocess
+from ai_office import collaborate
 from pathlib import Path
 OUT=Path("deliverables"); OUT.mkdir(exist_ok=True)
 STATE=Path("data/taskmarket_active.json"); STATE.parent.mkdir(exist_ok=True)
@@ -70,7 +71,7 @@ def ai(desc,fmt,path):
     path.write_text(text,encoding="utf-8")
     return True,{"bytes":path.stat().st_size,"model":MODEL}
 def main():
-    out={"status":"ok","actions_seen":0,"claims":0,"submitted":0,"ai_generated":0,"settlement_pending":0,"verified_revenue_usd":0,"errors":[],"skipped":[]}
+    out={"status":"ok","actions_seen":0,"claims":0,"submitted":0,"ai_generated":0,"settlement_pending":0,"verified_revenue_usd":0,"errors":[],"skipped":[],"office_roles":["Scout","Strategist","Producer","Auditor"]}
     try: out["wallet"]=cli("address")
     except Exception as e: out["errors"].append({"stage":"address","error":str(e)})
     try: acts=rows(cli("actions"))
@@ -109,7 +110,7 @@ def main():
                 t=cli("task","get",task_id) or {}
                 submit=next((a for a in (t.get("pendingActions") or []) if free(a,"submit")),None)
             if not submit or ai_count>=MAX_AI: continue
-            ai_count+=1; ext={"html":"html","svg":"svg","md":"md"}[fmt]; path=OUT/("auto_"+task_id+"."+ext)
+            ai_count+=1; ext={"html":"html","svg":"svg","md":"md"}[fmt]; path=OUT/("auto_"+task_id+"."+ext)\n            office=collaborate(desc,fmt) if fmt=="md" else None\n            if office: out.setdefault("office_reviews",[]).append({"id":task_id,"roles":office.get("office_roles",[]),"decision":office.get("decision") or office.get("recommendation")})
             ok,meta=deterministic_deliverable(desc,fmt,path)
             if not ok: ok,meta=ai(desc,fmt,path)
             if not ok: out["skipped"].append({"id":task_id,"reason":meta}); continue
