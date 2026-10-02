@@ -21,6 +21,12 @@ def tid(x): return str(x.get("taskId") or x.get("task_id") or x.get("id") or "")
 def free(a,name):
     return str(a.get("action","")).lower()==name and not a.get("requiresPayment") and float(a.get("costUsd") or a.get("cost") or 0)==0
 
+def paid_micro(a,name,max_cost=0.001):
+    if str(a.get("action","")).lower()!=name: return False
+    if not a.get("requiresPayment"): return False
+    try: return 0 < float(a.get("costUsd") or a.get("cost") or 0) <= max_cost
+    except Exception: return False
+
 def priority(t):
     try:
         reward=float(t.get("reward") or 0)/1000000
@@ -79,6 +85,12 @@ def main():
     except Exception as e: acts=[]; out["errors"].append({"stage":"actions","error":str(e)})
     try: inbox=rows(cli("inbox"))
     except Exception as e: inbox=[]; out["errors"].append({"stage":"inbox","error":str(e)})
+    try:
+        balance_data=cli("wallet","balance") or {}
+        out["wallet_balance_usd"]=float(balance_data.get("balanceUsdc") or 0)
+    except Exception as e:
+        out["wallet_balance_usd"]=0.0
+        out["errors"].append({"stage":"wallet-balance","error":str(e)})
     try: mine=rows(cli("task","my-submissions"))
     except Exception as e: mine=[]; out["errors"].append({"stage":"my-submissions","error":str(e)})
     submitted_ids={str(x.get("taskId")) for x in mine if x.get("taskId")}
@@ -106,14 +118,30 @@ def main():
             if not fmt: continue
             pending=t.get("pendingActions") or []
             submit=next((a for a in pending if free(a,"submit")),None)
+            submit_paid=next((a for a in pending if paid_micro(a,"submit")),None)
+            reward_usd=float(t.get("reward") or 0)/1000000
+            paid_ok=(not submit and submit_paid and reward_usd >= 5 and
+                     int(t.get("submissionCount") or 0) < 20 and
+                     float(out.get("wallet_balance_usd") or 0) >= 0.002)
+            chosen_submit=submit or (submit_paid if paid_ok else None)
             claim=next((a for a in pending if free(a,"claim")),None)
             if mode=="claim" and not submit and claim:
                 cli("task","claim",task_id); out["claims"]+=1
                 t=cli("task","get",task_id) or {}
-                submit=next((a for a in (t.get("pendingActions") or []) if free(a,"submit")),None)
-            if not submit or ai_count>=MAX_AI: continue
-            ai_count+=1; ext={"html":"html","svg":"svg","md":"md"}[fmt]; path=OUT/("auto_"+task_id+"."+ext)
-            office=collaborate({"description":desc,"reward_usd":float(t.get("reward") or 0)/1000000,"mode":mode,"task_id":task_id},fmt)
+                pending=t.get("pendingActions") or []
+                submit=next((a for a in pending if free(a,"submit")),None)
+                submit_paid=next((a for a in pending if paid_micro(a,"submit")),None)
+                reward_usd=float(t.get("reward") or 0)/1000000
+                paid_ok=(not submit and submit_paid and reward_usd >= 5 and
+                         int(t.get("submissionCount") or 0) < 20 and
+                         float(out.get("wallet_balance_usd") or 0) >= 0.002)
+                chosen_submit=submit or (submit_paid if paid_ok else None)
+            if not chosen_submit: continue
+            ext={"html":"html","svg":"svg","md":"md"}[fmt]; path=OUT/("auto_"+task_id+"."+ext)
+            office=None
+            if os.environ.get("OPENAI_API_KEY") and ai_count < MAX_AI:
+                office=collaborate({"description":desc,"reward_usd":float(t.get("reward") or 0)/1000000,"mode":mode,"task_id":task_id},fmt)
+                ai_count += 1
             if office:
                 decision=office.get("decision") or office.get("recommendation")
                 out.setdefault("office_reviews",[]).append({"id":task_id,"roles":office.get("office_roles",[]),"model":office.get("model"),"decision":decision,"fixer":office.get("fixer")})
@@ -121,10 +149,15 @@ def main():
                     out["skipped"].append({"id":task_id,"reason":"office_decision_"+str(decision)})
                     continue
             ok,meta=deterministic_deliverable(desc,fmt,path)
-            if not ok: ok,meta=ai(desc,fmt,path)
+            if not ok:
+                if not os.environ.get("OPENAI_API_KEY") or ai_count >= MAX_AI:
+                    out["skipped"].append({"id":task_id,"reason":"AI_required_but_unavailable"})
+                    continue
+                ok,meta=ai(desc,fmt,path)
+                ai_count += 1
             if not ok: out["skipped"].append({"id":task_id,"reason":meta}); continue
-            if not submit:
-                out["skipped"].append({"id":task_id,"reason":"no_free_submit_action"})
+            if not chosen_submit:
+                out["skipped"].append({"id":task_id,"reason":"no_verified_submit_action"})
                 continue
             result=cli("task","submit",task_id,"--file",str(path))
             out["submitted"]+=1
@@ -140,7 +173,9 @@ def main():
             if tx and pay is not None: out["verified_revenue_usd"]+=float(pay)/1000000
             elif x.get("taskId"): out["settlement_pending"]+=1
     except Exception as e: out["errors"].append({"stage":"settlement","error":str(e)})
-    out["ai_enabled"]=bool(os.environ.get("OPENAI_API_KEY")); out["paid_actions_used"]=False; out["selection_policy"]="reward_per_submission; free_actions_only; exact_pendingActions"
+    out["ai_enabled"]=bool(os.environ.get("OPENAI_API_KEY"))
+    out["paid_actions_used"]=any(bool(x.get("result",{}).get("paid")) for x in out.get("submissions",[]) if isinstance(x,dict))
+    out["selection_policy"]="free_first; paid_micro_fee<=0.001USDC; reward>=5; submissions<20; balance>=0.002"
     STATE.write_text(json.dumps(out,ensure_ascii=False,separators=(",",":")),encoding="utf-8")
     print(json.dumps(out,ensure_ascii=False))
 if __name__=="__main__": main()
