@@ -21,6 +21,13 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      - name: Restore persistent payment ledger
+        uses: actions/cache/restore@v6
+        with:
+          path: data/base_payments.json
+          key: earnagent-payments-${{ github.run_id }}
+          restore-keys: |
+            earnagent-payments-
       - name: Self-heal generated runtime scripts
         run: |
           python3 - <<'PY'
@@ -132,6 +139,17 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           EARNAGENT_MODEL: gpt-5.6-luna
         run: python3 taskmarket_worker.py
+      - name: Verify direct Base USDC sales
+        env:
+          EARNAGENT_SALES_WALLET_ADDRESS: ${{ secrets.TASKMARKET_WALLET_ADDRESS }}
+        run: |
+          python3 base_payment_verifier.py | tee base_payment_run.json
+          test -s data/base_payments.json
+      - name: Save persistent payment ledger
+        uses: actions/cache/save@v6
+        with:
+          path: data/base_payments.json
+          key: earnagent-payments-${{ github.run_id }}
       - name: Build autonomous sales catalog
         env:
           TASKMARKET_WALLET_ADDRESS: ${{ secrets.TASKMARKET_WALLET_ADDRESS }}
