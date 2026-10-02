@@ -8,7 +8,7 @@ decision-maker for the task, while the Fixer is a narrow safety/structure gate.
 """
 import json, os, urllib.request
 from pathlib import Path
-from office_fixer import repair
+from office_fixer import repair\nfrom office_memory import context, remember
 
 ROLES = {
     "Scout": "Find executable revenue opportunities and important task facts. Look beyond the supplied task for repeatable channels, adjacent work and buyer/product opportunities, but never invent payment evidence.",
@@ -120,7 +120,7 @@ def collaborate(task, fmt):
     fixed["office_stage_order"] = ["Scout", "Strategist", "Producer", "Auditor", "Executor", "Fixer"]
     fixed["office_models"] = models
     fixed["office_ai_stages"] = ai_stages
-    fixed["office_context"] = {
+    remember(task, fmt, fixed)\n    fixed["office_context"] = {
         "scout": context.get("Scout"),
         "strategy": context.get("Strategist"),
         "production": context.get("Producer"),
