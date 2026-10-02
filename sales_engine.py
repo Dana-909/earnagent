@@ -25,21 +25,130 @@ def write_product(p):
     else:
         body='''<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700"><rect width="1200" height="700" fill="#f4f1ea"/><text x="60" y="90" font-family="system-ui" font-size="44" font-weight="700">Minimal Social Icon SVG Pack</text><g fill="none" stroke="#18242b" stroke-width="10"><circle cx="180" cy="250" r="65"/><circle cx="420" cy="250" r="65"/><circle cx="660" cy="250" r="65"/><rect x="865" y="185" width="130" height="130" rx="28"/></g><text x="120" y="430" font-family="system-ui" font-size="24">Original simple vector symbols — edit freely.</text></svg>'''
     path.write_text(body,encoding="utf-8"); return path
-def render_store(products):
+def render_store(products, lemon_state):
     cards=[]
+    ls={x.get("slug"):x for x in lemon_state.get("published_products",[])}
     for p in products:
-        cards.append('<article><h2>'+p["title"]+'</h2><p>'+p["pitch"]+'</p><strong>$'+format(p["price"],".2f")+'</strong><p><a href="products/'+p["slug"]+'.'+p["kind"]+'">Preview</a></p><div class="pay"><b>Pay with '+BASE_USDC+'</b><br>Send exactly <b>'+format(p["price"],".2f")+' USDC</b> on Base to:<br><code>'+WALLET+'</code><br><small>Only blockchain-verified payments count.</small></div></article>')
+        hosted=ls.get(p["slug"],{})
+        buy=hosted.get("buy_now_url")
+        buy_html='<p><a href="'+buy+'"><b>Buy securely online</b></a></p>' if buy else ''
+        cards.append('<article><h2>'+p["title"]+'</h2><p>'+p["pitch"]+'</p><strong>
     html='''<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EarnAgent Digital Store</title><style>body{font:16px system-ui;margin:0;background:#101820;color:#f5f1e8}main{max-width:1050px;margin:auto;padding:30px}article{background:#18252e;padding:22px;margin:16px 0;border-radius:16px}a{color:#b9e4ff}.pay{background:#24333d;padding:14px;border-radius:10px}code{overflow-wrap:anywhere}</style></head><body><main><h1>EarnAgent Digital Store</h1><p>Original downloadable tools, templates and assets.</p>'''+''.join(cards)+'''</main></body></html>'''
     (ROOT/"index.html").write_text(html,encoding="utf-8")
-def lemon_probe():
+def lemon_api_get(path,key):
+    req=urllib.request.Request(
+        "https://api.lemonsqueezy.com/v1/"+path.lstrip("/"),
+        headers={"Accept":"application/vnd.api+json","Content-Type":"application/vnd.api+json","Authorization":"Bearer "+key})
+    with urllib.request.urlopen(req,timeout=20) as r:
+        return json.loads(r.read().decode())
+
+def lemon_commercial_state():
     key=os.getenv("LEMONSQUEEZY_API_KEY")
-    if not key: return {"configured":False,"status":"not_configured"}
-    req=urllib.request.Request("https://api.lemonsqueezy.com/v1/stores",headers={"Accept":"application/vnd.api+json","Content-Type":"application/vnd.api+json","Authorization":"Bearer "+key})
+    if not key: return {"configured":False,"status":"not_configured","products":[],"paid_orders":[]}
     try:
-        with urllib.request.urlopen(req,timeout=20) as r: data=json.loads(r.read().decode())
-        stores=[x.get("attributes",{}) for x in data.get("data",[])]
-        return {"configured":True,"status":"connected","stores":len(stores),"store_names":[x.get("name") for x in stores]}
-    except Exception as e: return {"configured":True,"status":"error","error":str(e)[:180]}
+        stores=lemon_api_get("stores?page[size]=100",key).get("data",[])
+        products=lemon_api_get("products?page[size]=100",key).get("data",[])
+        orders=lemon_api_get("orders?page[size]=100&sort=-createdAt",key).get("data",[])
+        published=[]
+        for x in products:
+            a=x.get("attributes",{})
+            published.append({
+                "id":x.get("id"),"slug":a.get("slug"),"name":a.get("name"),
+                "status":a.get("status"),"buy_now_url":a.get("buy_now_url"),
+                "price_cents":a.get("price")})
+        paid=[]
+        revenue=0.0
+        for x in orders:
+            a=x.get("attributes",{})
+            if a.get("status")=="paid" and not a.get("refunded"):
+                total=float(a.get("total_usd",a.get("total",0)) or 0)/100
+                revenue+=total
+                item=a.get("first_order_item") or {}
+                paid.append({
+                    "id":x.get("id"),"order_number":a.get("order_number"),
+                    "product_id":item.get("product_id"),"product_name":item.get("product_name"),
+                    "total_usd":round(total,2),"created_at":a.get("created_at"),
+                    "test_mode":bool(a.get("test_mode",False))})
+        return {
+            "configured":True,"status":"connected","stores":len(stores),
+            "store_names":[x.get("attributes",{}).get("name") for x in stores],
+            "published_products":published,
+            "paid_orders":paid,
+            "verified_revenue_usd":round(revenue,2),
+            "live_paid_orders":sum(1 for x in paid if not x["test_mode"]),
+            "test_paid_orders":sum(1 for x in paid if x["test_mode"])
+        }
+    except Exception as e:
+        return {"configured":True,"status":"error","error":str(e)[:240],"products":[],"paid_orders":[]}
+
+def lemon_probe():
+    state=lemon_commercial_state()
+    return {k:v for k,v in state.items() if k not in ("paid_orders",)}
+
+
+def main():
+    products=[]
+    for p in PRODUCTS_PLAN:
+        path=write_product(p); q=dict(p); q["file"]=str(path); q["sha256"]=hashlib.sha256(path.read_bytes()).hexdigest(); products.append(q)
+    lemon_state=lemon_commercial_state()
+    render_store(products,lemon_state)
+    payload={"generated_at":datetime.now(timezone.utc).isoformat(),"products_generated":len(products),"catalog_value_usd":round(sum(p["price"] for p in products),2),"wallet":WALLET,"payment_network":"Base","payment_asset":"USDC","lemon_squeezy":lemon_state,"products":products,"real_sales":lemon_state.get("live_paid_orders",0),"verified_revenue_usd":lemon_state.get("verified_revenue_usd",0),"rule":"Never count views, listings or simulated orders as revenue; only verified payment/order events count."}
+    STATE.write_text(json.dumps(payload,ensure_ascii=False,separators=(",",":")),encoding="utf-8"); print(json.dumps(payload,ensure_ascii=False))
+if __name__=="__main__": main()
++format(p["price"],".2f")+'</strong><p><a href="products/'+p["slug"]+'.'+p["kind"]+'">Preview</a></p>'+buy_html+'<div class="pay"><b>Alternative: pay with '+BASE_USDC+'</b><br>Send exactly <b>'+format(p["price"],".2f")+' USDC</b> on Base to:<br><code>'+WALLET+'</code><br><small>Only blockchain-verified payments count.</small></div></article>')
+    html='''<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EarnAgent Digital Store</title><style>body{font:16px system-ui;margin:0;background:#101820;color:#f5f1e8}main{max-width:1050px;margin:auto;padding:30px}article{background:#18252e;padding:22px;margin:16px 0;border-radius:16px}a{color:#b9e4ff}.pay{background:#24333d;padding:14px;border-radius:10px}code{overflow-wrap:anywhere}</style></head><body><main><h1>EarnAgent Digital Store</h1><p>Original downloadable tools, templates and assets.</p>'''+''.join(cards)+'''</main></body></html>'''
+    (ROOT/"index.html").write_text(html,encoding="utf-8")
+def lemon_api_get(path,key):
+    req=urllib.request.Request(
+        "https://api.lemonsqueezy.com/v1/"+path.lstrip("/"),
+        headers={"Accept":"application/vnd.api+json","Content-Type":"application/vnd.api+json","Authorization":"Bearer "+key})
+    with urllib.request.urlopen(req,timeout=20) as r:
+        return json.loads(r.read().decode())
+
+def lemon_commercial_state():
+    key=os.getenv("LEMONSQUEEZY_API_KEY")
+    if not key: return {"configured":False,"status":"not_configured","products":[],"paid_orders":[]}
+    try:
+        stores=lemon_api_get("stores?page[size]=100",key).get("data",[])
+        products=lemon_api_get("products?page[size]=100",key).get("data",[])
+        orders=lemon_api_get("orders?page[size]=100&sort=-createdAt",key).get("data",[])
+        published=[]
+        for x in products:
+            a=x.get("attributes",{})
+            published.append({
+                "id":x.get("id"),"slug":a.get("slug"),"name":a.get("name"),
+                "status":a.get("status"),"buy_now_url":a.get("buy_now_url"),
+                "price_cents":a.get("price")})
+        paid=[]
+        revenue=0.0
+        for x in orders:
+            a=x.get("attributes",{})
+            if a.get("status")=="paid" and not a.get("refunded"):
+                total=float(a.get("total_usd",a.get("total",0)) or 0)/100
+                revenue+=total
+                item=a.get("first_order_item") or {}
+                paid.append({
+                    "id":x.get("id"),"order_number":a.get("order_number"),
+                    "product_id":item.get("product_id"),"product_name":item.get("product_name"),
+                    "total_usd":round(total,2),"created_at":a.get("created_at"),
+                    "test_mode":bool(a.get("test_mode",False))})
+        return {
+            "configured":True,"status":"connected","stores":len(stores),
+            "store_names":[x.get("attributes",{}).get("name") for x in stores],
+            "published_products":published,
+            "paid_orders":paid,
+            "verified_revenue_usd":round(revenue,2),
+            "live_paid_orders":sum(1 for x in paid if not x["test_mode"]),
+            "test_paid_orders":sum(1 for x in paid if x["test_mode"])
+        }
+    except Exception as e:
+        return {"configured":True,"status":"error","error":str(e)[:240],"products":[],"paid_orders":[]}
+
+def lemon_probe():
+    state=lemon_commercial_state()
+    return {k:v for k,v in state.items() if k not in ("paid_orders",)}
+
+
 def main():
     products=[]
     for p in PRODUCTS_PLAN:
