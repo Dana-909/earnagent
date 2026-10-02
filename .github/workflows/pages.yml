@@ -11,7 +11,7 @@ permissions:
   id-token: write
 concurrency:
   group: earnagent
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   run:
     environment:
@@ -83,7 +83,9 @@ jobs:
       - name: Run action-first autonomous Taskmarket worker
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          EARNAGENT_MODEL: gpt-5.6-luna\n          EARNAGENT_EXECUTOR_MODEL: gpt-6.1-sol
+          EARNAGENT_MODEL: gpt-6-luna
+          EARNAGENT_EXECUTOR_MODEL: gpt-6-sol
+          EARNAGENT_FRONTIER_MODEL: gpt-6-astra
           EARNAGENT_MAX_ACTIONS: "16"
           EARNAGENT_MAX_AI: "3"
         run: python3 taskmarket_active.py
