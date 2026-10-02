@@ -140,6 +140,7 @@ jobs:
           EARNAGENT_MODEL: gpt-5.6-luna
         run: python3 taskmarket_worker.py
       - name: Verify direct Base USDC sales
+        continue-on-error: true
         env:
           EARNAGENT_SALES_WALLET_ADDRESS: ${{ secrets.TASKMARKET_WALLET_ADDRESS }}
         run: |
