@@ -16,7 +16,7 @@ class SalesEngineTests(unittest.TestCase):
         def fake(path,key):
             if path.startswith("stores"): return {"data":[{"id":"1","attributes":{"name":"Demo","slug":"demo-store"}}]}
             if path.startswith("products"): return {"data":[{"id":"10","attributes":{"slug":"freelancer-invoice-kit","name":"Freelancer","status":"published","buy_now_url":None,"price":700}}]}
-            if path.startswith("variants"): return {"data":[{"id":"77","attributes":{"status":"published"},"relationships":{"product":{"data":{"id":"10"}}}]}
+            if path.startswith("variants"): return {"data":[{"id":"77","attributes":{"status":"published"},"relationships":{"product":{"data":{"id":"10"}}}}]}
             if path.startswith("orders"): return {"data":[]}
             return {"data":[]}
         sales_engine.lemon_api_get=fake
