@@ -3,7 +3,7 @@ from pathlib import Path
 OUT=Path("deliverables"); OUT.mkdir(exist_ok=True)
 STATE=Path("data/taskmarket_active.json"); STATE.parent.mkdir(exist_ok=True)
 MAX_ACTIONS=int(os.environ.get("EARNAGENT_MAX_ACTIONS","16"))
-MAX_AI=int(os.environ.get("EARNAGENT_MAX_AI","10"))
+MAX_AI=int(os.environ.get("EARNAGENT_MAX_AI","3"))
 MODEL=os.environ.get("EARNAGENT_MODEL","gpt-5.6-luna")
 def cli(*args):
     p=subprocess.run(["taskmarket",*args],capture_output=True,text=True,timeout=120)
@@ -94,7 +94,7 @@ def main():
         try:
             t=cli("task","get",task_id) or {}
             mode=str(t.get("mode","")).lower()
-            if mode not in ("claim","bounty") or t.get("stakeRequired") or not t.get("escrowTxHash"): continue
+            if mode not in ("claim","bounty") or t.get("stakeRequired") or not t.get("escrowTxHash"): continue\n            if mode=="bounty" and t.get("submissionWindowOpen") is False: continue
             if t.get("status") not in ("open","claimed","pending_approval"): continue
             desc=str(t.get("description") or "").strip(); fmt=kind(desc)
             if not fmt: continue
@@ -114,7 +114,7 @@ def main():
                 out["skipped"].append({"id":task_id,"reason":"no_free_submit_action"})
                 continue
             result=cli("task","submit",task_id,"--file",str(path))
-            out["submitted"]+=1; out["ai_generated"]+=1
+            out["submitted"]+=1\n            if meta.get("model")==MODEL: out["ai_generated"]+=1
             out.setdefault("submissions",[]).append({"id":task_id,"mode":mode,"reward_usd":float(t.get("reward") or 0)/1000000,"result":result})
         except Exception as e: out["errors"].append({"stage":"execute","id":task_id,"error":str(e)[:500]})
     try:
