@@ -118,7 +118,7 @@ def main():
             path=OUT/(t["id"]+"."+ext)
             ok,meta=ai_generate(task_text(t),fmt,path)
             if not ok:
-                report["errors"].append({"stage":"ai-task","id":t.get("id"),"error":str(meta)[:300]})
+                report["ai_skipped"].append({"id":t.get("id"),"reason":str(meta)[:300]})
                 continue
             if path.stat().st_size>500000: raise ValueError("generated deliverable exceeds 500KB")
             low=path.read_text(encoding="utf-8").lower()
