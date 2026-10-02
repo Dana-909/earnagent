@@ -79,10 +79,10 @@ jobs:
           json.dump({"safe_free_submit_candidates":safe},open("taskmarket_preflight.json","w"),separators=(",",":"))
           print({"safe_free_submit_candidates":len(safe),"refs":[x["referenceCode"] for x in safe]})
           PY
-      - name: Validate and submit verified Taskmarket bounty
-        run: python3 taskmarket_execute.py
+      - name: Run autonomous Taskmarket worker
+        run: python3 taskmarket_worker.py
       - name: Run safety tests
-        run: python3 -m unittest -v test_worker.py test_verifier.py test_submitter.py test_ledger.py test_runner.py
+        run: python3 -m unittest -v test_worker.py test_verifier.py test_submitter.py test_ledger.py test_runner.py test_taskmarket_worker.py
       - name: Validate end-to-end safety orchestration
         run: python3 runner.py
       - name: Run autonomous earning scout
