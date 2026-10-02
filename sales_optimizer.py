@@ -4,6 +4,14 @@ from datetime import datetime, timezone
 
 STATE=Path("data/sales_experiments.json")
 STATE.parent.mkdir(exist_ok=True)
+PRODUCT_TO_NICHE={
+"Freelancer Invoice & Quote Kit":"local-service-admin",
+"Small Business KPI Dashboard":"real-estate",
+"30-Day Content Calendar Kit":"creator-sponsorship",
+"Job Application Tracker":"job-search",
+"Minimal Social Icon SVG Pack":"freelance-design",
+"Project Planning & Risk Kit":"construction",
+}
 NICHES=[
 ("local-service-admin","Local Service Admin Kit"),("creator-sponsorship","Creator Sponsorship Kit"),
 ("real-estate","Real Estate Lead Tracker"),("restaurant-ops","Small Restaurant Ops Kit"),
@@ -21,8 +29,29 @@ def main():
         if slug not in seen and len(added)<3:
             ex.append({"slug":slug,"title":title,"created_at":datetime.now(timezone.utc).isoformat(),"views":0,"verified_sales":0,"verified_revenue_usd":0.0,"status":"test"})
             added.append(slug)
+    sales_file=Path("data/sales_engine.json")
+    if sales_file.exists():
+        try:
+            sales=json.loads(sales_file.read_text())
+            live=[o for o in sales.get("lemon_squeezy",{}).get("paid_orders",[]) if not o.get("test_mode")]
+            by_niche={}
+            for order in live:
+                niche=PRODUCT_TO_NICHE.get(order.get("product_name"))
+                if niche:
+                    by_niche.setdefault(niche,{"sales":0,"revenue":0.0})
+                    by_niche[niche]["sales"]+=1
+                    by_niche[niche]["revenue"]+=float(order.get("total_usd",0) or 0)
+            for x in ex:
+                m=by_niche.get(x["slug"],{})
+                x["verified_sales"]=m.get("sales",x.get("verified_sales",0))
+                x["verified_revenue_usd"]=round(m.get("revenue",x.get("verified_revenue_usd",0)),2)
+        except Exception:
+            pass
     for x in ex:
-        x["score"]=round(float(x.get("verified_revenue_usd",0))*100 + float(x.get("verified_sales",0))*10,4)
+        rev=float(x.get("verified_revenue_usd",0))
+        sales=float(x.get("verified_sales",0))
+        x["score"]=round(rev*100 + sales*10,4)
+        x["status"]="scale" if rev>0 else "test"
     ex.sort(key=lambda x:x["score"],reverse=True)
     s["experiments"]=ex
     s["top_experiments"]=ex[:10]
