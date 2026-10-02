@@ -42,13 +42,20 @@ def lemon_commercial_state():
     try:
         stores=lemon_api_get("stores?page[size]=100",key).get("data",[])
         products=lemon_api_get("products?page[size]=100",key).get("data",[])
+        variants=lemon_api_get("variants?page[size]=100",key).get("data",[])
         orders=lemon_api_get("orders?page[size]=100&sort=-createdAt",key).get("data",[])
+        store_slug=stores[0].get("attributes",{}).get("slug") if stores else None
+        variant_by_product={}
+        for v in variants:
+            pid=str(v.get("relationships",{}).get("product",{}).get("data",{}).get("id",""))
+            if pid and pid not in variant_by_product:
+                variant_by_product[pid]=v.get("id")
         published=[]
         for x in products:
             a=x.get("attributes",{})
             published.append({"id":x.get("id"),"slug":a.get("slug"),"name":a.get("name"),
-                              "status":a.get("status"),"buy_now_url":a.get("buy_now_url"),
-                              "price_cents":a.get("price")})
+                              "status":a.get("status"),"buy_now_url":a.get("buy_now_url") or (("https://"+store_slug+".lemonsqueezy.com/checkout/buy/"+str(variant_by_product.get(str(x.get("id"))))) if store_slug and variant_by_product.get(str(x.get("id"))) else None),
+                              "variant_id":variant_by_product.get(str(x.get("id"))),"price_cents":a.get("price")})
         paid=[]
         revenue=0.0
         for x in orders:
