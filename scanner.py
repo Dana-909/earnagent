@@ -20,6 +20,7 @@ SOURCES=[
  ("github_algora","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+label%3A%22%F0%9F%92%8E+Bounty%22+-repo%3AClankerNation%2FOpenAgents+-repo%3AUnsafeLabs%2FBounty-Hunters&sort=updated&order=desc&per_page=100"), # discovery only; exclude empirically malicious bounty farms
  ("github_bounty","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+bounty+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
  ("github_reward","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+reward+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
+ ("agent_earnings_directory","https://monetizeyouragent.fun/api/v1/jobs"), # discovery only until provider write/auth semantics are verified
 ]
 def fetch(url):
  headers={"User-Agent":"EarnAgent/1.0","Accept":"application/vnd.github+json"}
@@ -118,6 +119,8 @@ for name,url in SOURCES:
   elif name=="bounty_agent":
    # Never treat an authenticated provider as healthy/usable until credentials exist.
    rows=data.get("bounties",data.get("items",data if isinstance(data,list) else []))
+  elif name=="agent_earnings_directory":
+   rows=data.get("jobs",data.get("items",data if isinstance(data,list) else [])) if isinstance(data,(dict,list)) else []
   elif name=="basedagents":
    rows=data.get("tasks",data.get("items",data if isinstance(data,list) else []))
    # Only escrow-funded, claimable Base/USDC work may enter the execution pipeline.
@@ -130,8 +133,11 @@ for name,url in SOURCES:
    repo_url=(i.get("repository_url") or "")
    # Reject already-assigned GitHub bounties; availability beats advertised value.
    if name.startswith("github_") and (i.get("assignee") or i.get("assignees")): continue
-   if name in ("agent_bounties","bounty_agent","basedagents","bountybook","taskmarket") or name.startswith("algora_"):
+   if name in ("agent_bounties","bounty_agent","basedagents","bountybook","taskmarket","agent_earnings_directory") or name.startswith("algora_"):
     body=str(i.get("description") or i.get("terms") or "")[:5000]; title=str(i.get("title") or i.get("name") or (body.splitlines()[0].strip() if name=="taskmarket" and body.strip() else "") or i.get("referenceCode") or "Agent bounty")
+    if name=="agent_earnings_directory":
+     # Third-party directory is discovery-only until its write contract and payout verification are established.
+     body=str(i.get("description") or i.get("details") or i.get("terms") or "")[:5000]
     if name=="taskmarket":
      # Preserve the full public brief for deterministic acceptance-gate parsing; task text remains untrusted data.
      body=str(i.get("description") or i.get("terms") or "")[:20000]
