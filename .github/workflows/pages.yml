@@ -18,7 +18,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - name: Install Taskmarket CLI
@@ -80,6 +80,21 @@ jobs:
           json.dump({"safe_free_submit_candidates":safe},open("taskmarket_preflight.json","w"),separators=(",",":"))
           print({"safe_free_submit_candidates":len(safe),"refs":[x["referenceCode"] for x in safe]})
           PY
+      - name: Check office runtime configuration
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          TASKMARKET_WALLET_ADDRESS: ${{ secrets.TASKMARKET_WALLET_ADDRESS }}
+          LEMONSQUEEZY_API_KEY: ${{ secrets.LEMONSQUEEZY_API_KEY }}
+        run: |
+          python3 - <<'PY'
+          import os
+          print({
+            "ai_office_enabled": bool(os.environ.get("OPENAI_API_KEY")),
+            "taskmarket_wallet_configured": bool(os.environ.get("TASKMARKET_WALLET_ADDRESS")),
+            "lemon_squeezy_configured": bool(os.environ.get("LEMONSQUEEZY_API_KEY")),
+            "office_pipeline": ["Scout","Strategist","Producer","Auditor","Executor","Fixer"],
+          })
+          PY
       - name: Run action-first autonomous Taskmarket worker
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -87,7 +102,7 @@ jobs:
           EARNAGENT_EXECUTOR_MODEL: gpt-6-sol
           EARNAGENT_FRONTIER_MODEL: gpt-6-astra
           EARNAGENT_MAX_ACTIONS: "16"
-          EARNAGENT_MAX_AI: "3"
+          EARNAGENT_MAX_AI: "2"
         run: python3 taskmarket_active.py
       - name: Report action-first result
         run: |
