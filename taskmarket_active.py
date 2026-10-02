@@ -55,7 +55,7 @@ def main():
     candidates={}
     for mode in ("claim","bounty"):
         try:
-            for t in rows(cli("task","list","--status","open","--mode",mode,"--limit","100","--sort","reward_desc")):
+            for t in rows(cli("task","list","--status","open","--mode",mode,"--limit","100")):
                 if t.get("id"): candidates[str(t["id"])]=t
         except Exception as e: out["errors"].append({"stage":"list-"+mode,"error":str(e)})
     for a in acts+inbox:
