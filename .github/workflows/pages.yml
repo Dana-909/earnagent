@@ -21,6 +21,18 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      - name: Self-heal generated runtime scripts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("sales_engine.py")
+          s=p.read_text()
+          bad='    xml=["<?xml version="1.0" encoding="UTF-8"?>","<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">"]'
+          good='    xml=[\'<?xml version="1.0" encoding="UTF-8"?>\',\'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\']'
+          if bad in s:
+              p.write_text(s.replace(bad,good))
+          compile(p.read_text(),"sales_engine.py","exec")
+          PY
       - name: Install Taskmarket CLI
         run: npm install -g @lucid-agents/taskmarket@latest
       - name: Verify Taskmarket CLI
