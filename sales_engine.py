@@ -155,7 +155,7 @@ const catalog=CATALOG;const qs=new URLSearchParams(location.search);const key=qs
 document.getElementById("product").textContent=catalog.labels[key]||"EarnAgent product";document.getElementById("amount").textContent=Number(catalog.prices[key]||0).toFixed(2);document.getElementById("network").textContent=nets[n]||"Base";document.getElementById("wallet").textContent="WALLET";
 </script></main></body></html>"""
     html=html.replace("CATALOG",data).replace("WALLET",wallet)
-    Path("pay.html").write_text(html,encoding="utf-8")
+    (ROOT/"pay.html").write_text(html,encoding="utf-8")
 
 def render_discovery_files(products):
     """Create search-engine discovery assets for the static storefront."""
