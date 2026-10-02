@@ -158,6 +158,8 @@ jobs:
         run: |
           python3 sales_engine.py | tee sales_engine_run.json
           test -s data/sales_engine.json
+      - name: Build free-to-paid revenue funnel
+        run: python3 revenue_funnel.py
       - name: Update sales experiments
         run: |
           python3 sales_optimizer.py | tee sales_optimizer_run.json
