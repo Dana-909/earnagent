@@ -11,6 +11,36 @@ TOOLS=[
  ("job-tracker-lite","Free Job Application Tracker","A lightweight private tracker you can use before upgrading to the full application kit.","job-application-tracker","$4"),
 ]
 
+
+
+NICHE_PAGES=[
+ ("freelancer-invoice","Free Invoice Template for Freelancers","Create a clean quote and invoice workflow in minutes. Use the free estimator, then upgrade to the reusable Freelancer Invoice & Quote Kit.","invoice-estimator.html","freelancer-invoice-kit","Freelancer Invoice & Quote Kit","$7"),
+ ("small-business-kpi","Small Business KPI Dashboard","Track leads, conversion, revenue per lead and marketing efficiency with a simple browser workflow.","kpi-checker.html","small-business-kpi-dashboard","Small Business KPI Dashboard","$9"),
+ ("job-search-tracker","Job Application Tracker","Keep applications, interviews and follow-ups organized privately in your browser.","job-tracker-lite.html","job-application-tracker","Job Application Tracker","$4"),
+ ("creator-content-calendar","30-Day Content Calendar for Creators","Plan a month of publishing with a practical content workflow instead of starting from a blank page.","invoice-estimator.html","content-calendar-kit","30-Day Content Calendar Kit","$5"),
+ ("contractor-project-planning","Project Planning Kit for Small Contractors","Organize scope, milestones, risks and decisions in one compact planning system.","kpi-checker.html","project-planning-kit","Project Planning & Risk Kit","$8"),
+ ("designer-client-workflow","Client Workflow Kit for Freelance Designers","Keep client work, decisions and project handoffs organized with reusable lightweight templates.","job-tracker-lite.html","svg-social-icon-pack","Minimal Social Icon SVG Pack","$6"),
+]
+
+def niche_page(slug,title,desc,free_slug,product_slug,product_title,price):
+    body=f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{html.escape(title)} — EarnAgent</title><meta name="description" content="{html.escape(desc)}">
+<meta property="og:title" content="{html.escape(title)}"><meta property="og:description" content="{html.escape(desc)}">
+<style>body{{font:16px system-ui;margin:0;background:#f4f1ea;color:#18242b}}main{{max-width:900px;margin:32px auto;padding:30px;background:#fff;border-radius:18px}}.hero{{padding:22px;background:#eef5f8;border-radius:14px}}.cta{{display:inline-block;padding:12px 16px;background:#18242b;color:#fff;text-decoration:none;border-radius:10px;margin:8px 8px 8px 0}}.grid{{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0}}.grid div{{padding:16px;background:#f7f7f5;border-radius:12px}}@media(max-width:650px){{.grid{{grid-template-columns:1fr}}}}</style></head><body><main>
+<div class="hero"><h1>{html.escape(title)}</h1><p>{html.escape(desc)}</p><a class="cta" href="../free/{html.escape(free_slug)}">Try the free tool</a><a class="cta" href="../index.html">See the full store</a></div>
+<div class="grid"><div><b>Fast</b><br>Runs in the browser.</div><div><b>Private</b><br>Designed for lightweight local workflows.</div><div><b>Reusable</b><br>Upgrade when the free tool is not enough.</div></div>
+<h2>Free first, paid when useful</h2><p>Use the free tool without an account. If it solves the immediate problem and you need a reusable kit, the paid product is <b>{html.escape(product_title)}</b> for {html.escape(price)}.</p>
+<p><a class="cta" href="../index.html">View {html.escape(product_title)}</a></p>
+<p><small>EarnAgent products are independent digital tools and templates. No guarantee of business, job, or financial results.</small></p>
+</main></body></html>"""
+    (ROOT/"niches"/(slug+".html")).write_text(body,encoding="utf-8")
+
+def build_niche_pages():
+    n=ROOT/"niches"; n.mkdir(parents=True,exist_ok=True)
+    for row in NICHE_PAGES: niche_page(*row)
+    links="".join("<li><a href='"+s+".html'>"+html.escape(t)+"</a> — "+html.escape(d)+"</li>" for s,t,d,*_ in NICHE_PAGES)
+    (n/"index.html").write_text("<!doctype html><meta charset='utf-8'><title>EarnAgent guides and tools</title><h1>EarnAgent guides and tools</h1><p>Free browser tools and reusable digital kits for practical work.</p><ul>"+links+"</ul>",encoding="utf-8")
+
 def page(slug,title,desc,product,price,body):
     c=f"""<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{html.escape(title)} — EarnAgent</title><meta name="description" content="{html.escape(desc)}">
@@ -39,4 +69,5 @@ if index.exists():
     index.write_text(old,encoding="utf-8")
 
 (FREE/"index.html").write_text("<!doctype html><meta charset='utf-8'><title>Free EarnAgent tools</title><h1>Free EarnAgent tools</h1><ul>"+''.join(links)+"</ul>",encoding="utf-8")
-print({"free_tools":len(TOOLS),"status":"built"})
+build_niche_pages()
+print({"free_tools_and_niche_pages":len(TOOLS),"status":"built"})
