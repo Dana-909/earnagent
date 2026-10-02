@@ -21,6 +21,7 @@ SOURCES=[
  ("github_bounty","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+bounty+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
  ("github_reward","https://api.github.com/search/issues?q=is%3Aissue+is%3Aopen+reward+in%3Atitle%2Cbody&sort=updated&order=desc&per_page=100"),
  ("agent_earnings_directory","https://monetizeyouragent.fun/api/v1/jobs"), # discovery only until provider write/auth semantics are verified
+ ("moltjobs","https://api.moltjobs.io/v1/jobs?status=OPEN"), # discovery-only until MOLTJOBS_API_KEY is configured
 ]
 def fetch(url):
  headers={"User-Agent":"EarnAgent/1.0","Accept":"application/vnd.github+json"}
