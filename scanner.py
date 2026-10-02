@@ -79,6 +79,25 @@ def score(x):
  for k in ("design","onsite","phone","physical","kyc","deposit","pay to","purchase","archived duplicate","waiting_sponsor","unavailable","verification-unavailable","signup","register","claim bond","entry bond"):
   if k in t:s-=12
  return round(s,1)
+# Persistent Scout intelligence: learn which revenue channels actually convert.
+MEMORY_PATH="data/scout_memory.json"
+def load_scout_memory():
+ try:
+  with open(MEMORY_PATH,"r",encoding="utf-8") as f: return json.load(f)
+ except Exception: return {"sources":{},"ideas":[]}
+def save_scout_memory(m):
+ os.makedirs("data",exist_ok=True)
+ with open(MEMORY_PATH,"w",encoding="utf-8") as f: json.dump(m,f,ensure_ascii=False,separators=(",",":"))
+def scout_channel_strategy(source, rows):
+ m=load_scout_memory()
+ s=m.setdefault("sources",{}).setdefault(source,{"seen":0,"eligible":0,"verified_usd":0.0})
+ s["seen"]+=len(rows)
+ s["eligible"]+=sum(1 for x in rows if isinstance(x,dict) and x.get("_canonical_payment_evidence"))
+ # Generate a concrete next hypothesis from evidence, rather than just another listing.
+ if s["seen"] and s["eligible"]==0 and source not in m.setdefault("ideas",[]):
+  m["ideas"].append({"source":source,"idea":"Find an authenticated or public execution path for this source before spending agent cycles on discovery-only listings.","created":NOW.isoformat()})
+ save_scout_memory(m)
+
 ops=[]; errors=[]
 source_diagnostics={"providers":{}}
 for name,url in SOURCES:
