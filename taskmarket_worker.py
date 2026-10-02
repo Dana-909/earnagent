@@ -81,7 +81,8 @@ def ai_generate(desc, fmt, path):
     return True, {"model":model,"bytes":path.stat().st_size}
 
 def main():
-    report={"checked":[],"submitted":[],"claimed":[],"ai_generated":[],"awards":[],"errors":[],"verified_revenue_usd":0}
+    import os
+    report={"checked":[],"submitted":[],"claimed":[],"ai_generated":[],"awards":[],"errors":[],"verified_revenue_usd":0,"ai_enabled":bool(os.environ.get("OPENAI_API_KEY"))}
     try: report["wallet"]=cli("address")
     except Exception as e: report["errors"].append({"stage":"address","error":str(e)})
     try: ts=(cli("task","list","--status","open","--limit","100") or {}).get("tasks",[])
@@ -116,7 +117,9 @@ def main():
             ext={"html":"html","svg":"svg","markdown":"md"}[fmt]
             path=OUT/(t["id"]+"."+ext)
             ok,meta=ai_generate(task_text(t),fmt,path)
-            if not ok: continue
+            if not ok:
+                report["errors"].append({"stage":"ai-task","id":t.get("id"),"error":str(meta)[:300]})
+                continue
             if path.stat().st_size>500000: raise ValueError("generated deliverable exceeds 500KB")
             low=path.read_text(encoding="utf-8").lower()
             if fmt in ("html","svg") and ("<foreignobject" in low or "<iframe" in low): raise ValueError("external/embed content prohibited")
