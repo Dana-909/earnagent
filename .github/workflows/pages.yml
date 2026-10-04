@@ -128,6 +128,7 @@ jobs:
           EARNAGENT_FRONTIER_MODEL: gpt-6-sol
           EARNAGENT_MAX_ACTIONS: "16"
           EARNAGENT_MAX_AI: "1"
+          EARNAGENT_PAID_ACTIONS_APPROVED: "true"
         run: python3 taskmarket_active.py
       - name: Report action-first result
         run: |
