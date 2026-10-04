@@ -7,13 +7,13 @@ PRODUCTS.mkdir(parents=True,exist_ok=True); STATE.parent.mkdir(exist_ok=True)
 WALLET=os.getenv("TASKMARKET_WALLET_ADDRESS") or "0x948B78F80ba73E846B27171f31E3609b0e399701"
 BASE_USDC="USDC on Base"
 PRODUCTS_PLAN=[
- {"slug":"marketplace-profit-leak-audit","title":"Marketplace Profit Leak Audit Kit","price":29.00,"kind":"html","pitch":"A practical seller-ops audit that estimates margin leakage across fees, returns, ads, discounts and manual work."},
+ {"slug":"marketplace-profit-leak-audit","title":"Instant Profit Leak Audit","price":9.00,"kind":"html","pitch":"A practical seller-ops audit that estimates margin leakage across fees, returns, ads, discounts and manual work."},
  {"slug":"marketplace-ops-dashboard","title":"Marketplace Ops Dashboard","price":49.00,"kind":"html","pitch":"A browser-based operating dashboard for orders, revenue, fees, ad spend, returns, margin and weekly priorities."},
  {"slug":"ai-listing-optimization-kit","title":"AI Listing Optimization Kit","price":39.00,"kind":"md","pitch":"A repeatable workflow for improving marketplace titles, descriptions, attributes and creative briefs with measurable tests."},
  {"slug":"seller-cashflow-planner","title":"Seller Cashflow Planner","price":19.00,"kind":"html","pitch":"A lightweight cashflow planner for marketplace sellers that models payouts, fees, ad spend and upcoming obligations."},
  {"slug":"ecommerce-kpi-review-kit","title":"Ecommerce KPI Review Kit","price":24.00,"kind":"md","pitch":"A weekly operating review system for conversion, contribution margin, returns, inventory and channel performance."},
  {"slug":"marketplace-automation-blueprint","title":"Marketplace Automation Blueprint","price":79.00,"kind":"md","pitch":"A prioritized blueprint for reducing repetitive marketplace operations with AI and workflow automation."},
- {"slug":"marketplace-profit-rescue-report","title":"Marketplace Profit Rescue Report","price":99.00,"kind":"html","pitch":"An interactive profit-rescue report generator that turns seller metrics into a prioritized action plan and printable management report."},
+ {"slug":"marketplace-profit-rescue-report","title":"Instant Profit Rescue Report","price":9.00,"kind":"html","pitch":"An interactive profit-rescue report generator that turns seller metrics into a prioritized action plan and printable management report."},
 ]
 
 def write_product(p):
