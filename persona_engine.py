@@ -3,6 +3,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 
 ROOT=Path("content"); ROOT.mkdir(exist_ok=True)
+RADAR=ROOT/"trend_radar.json"
 PERSONA={
   "name":"Max Vector",
   "handle":"@maxvector.ai",
@@ -24,6 +25,7 @@ LESSONS=[
 ]
 def slug(s): return "".join(c.lower() if c.isalnum() else "-" for c in s).strip("-")
 def make():
+    radar=json.loads(RADAR.read_text(encoding="utf-8")) if RADAR.exists() else {"trends":[],"own_trend_tests":[]}
     lessons=[]
     for n,title,hook in LESSONS:
         lessons.append({"episode":n,"title":title,"hook":hook,
@@ -40,6 +42,8 @@ def make():
     (ROOT/"index.html").write_text(index,encoding="utf-8")
     # machine-readable feed for future publishing adapters
     feed={"title":"Max Vector AI Business Lab","handle":PERSONA["handle"],"episodes":[{"title":x["video_title"],"description":x["description"],"script":x["short_script"]} for x in lessons]}
+    feed["trend_queue"]=radar.get("trends",[])[:12]
     (ROOT/"publish_queue.json").write_text(json.dumps(feed,ensure_ascii=False,indent=2),encoding="utf-8")
+    (ROOT/"trend_radar.html").write_text("""<!doctype html><meta charset="utf-8"><title>Max Vector Trend Radar</title><style>body{font:18px system-ui;max-width:900px;margin:40px auto;padding:20px}li{margin:12px 0}</style><h1>Max Vector Trend Radar</h1><p>Fresh public-feed snapshot used to choose experiments. It is not a guarantee of virality.</p><ol>""" + "".join("<li><b>"+x["topic"]+"</b> · "+x["region"]+"</li>" for x in radar.get("trends",[])[:20]) + """</ol><h2>Original trend tests</h2><ol>""" + "".join("<li>"+x["topic"]+"</li>" for x in radar.get("own_trend_tests",[])) + """</ol>""",encoding="utf-8")
     print(json.dumps({"status":"ok","persona":PERSONA["name"],"episodes":len(lessons),"course":"content/course","publish_queue":"content/publish_queue.json"}))
 if __name__=="__main__": make()
