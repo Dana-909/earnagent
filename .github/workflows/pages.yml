@@ -189,6 +189,13 @@ jobs:
         with:
           path: data/base_payments.json
           key: earnagent-payments-${{ github.run_id }}
+      - name: Scan live trends and generate Shorts queue
+        continue-on-error: true
+        run: |
+          python3 trend_engine.py | tee trend_engine_run.json
+          test -s content/trend_radar.json
+          test -s content/shorts_queue.json
+
       - name: Build Max Vector creator content
         run: |
           python3 persona_engine.py | tee persona_engine_run.json
