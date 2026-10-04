@@ -228,6 +228,8 @@ jobs:
           for f in data/sales_engine.json data/taskmarket_active.json data/base_payments.json data/sales_experiments.json; do
             if [ -f "$f" ]; then cp "$f" "public_site/store/data/$(basename "$f")"; fi
           done
+          mkdir -p public_site/creator
+          cp -R content/. public_site/creator/
           cp store/robots.txt public_site/robots.txt
           cp store/sitemap.xml public_site/sitemap.xml
           cat > public_site/index.html <<'HTML'
