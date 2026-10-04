@@ -59,7 +59,7 @@ for slug,title,desc,free,product in PLATFORM_PAGES:
  (GUIDES/(slug+".html")).write_text(page(title,desc,product,"see store",body),encoding="utf-8")
 
 # Rebuild sitemap after adding platform-intent pages.
-urls = ["","free/marketplace-profit-checker.html","free/seller-kpi-checker.html","free/cashflow-checker.html","free/cross-platform-profit-checker.html","niches/marketplace-sellers.html","dealpilot/index.html","dealpilot/subscription-break-even.html","dealpilot/phone-total-cost.html","dealpilot/car-monthly-cost.html","dealpilot/buy-vs-rent.html"]
+urls = ["","free/marketplace-profit-checker.html","free/seller-kpi-checker.html","free/cashflow-checker.html","free/cross-platform-profit-checker.html","niches/marketplace-sellers.html","dealpilot/index.html","dealpilot/subscription-break-even.html","dealpilot/phone-total-cost.html","dealpilot/car-monthly-cost.html","dealpilot/buy-vs-rent.html","earnings.html"]
 urls += ["guides/"+x[0]+".html" for x in GUIDE_ROWS]
 urls += ["guides/"+x[0]+".html" for x in PLATFORM_PAGES]
 (ROOT/"sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join('<url><loc>https://dana-909.github.io/earnagent/store/'+x+'</loc></url>' for x in urls)+'</urlset>',encoding="utf-8")
