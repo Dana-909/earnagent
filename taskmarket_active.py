@@ -22,9 +22,13 @@ def free(a,name):
     return str(a.get("action","")).lower()==name and not a.get("requiresPayment") and float(a.get("costUsd") or a.get("cost") or 0)==0
 
 def paid_micro(a,name,max_cost=0.001):
-    # Paid Taskmarket requests require explicit approval for the exact action.
-    # EarnAgent keeps paid execution disabled unless an explicit runtime approval is added.
-    return False
+    # Paid Taskmarket requests are allowed only after explicit owner approval
+    # is present in the runtime environment, and only for tiny verified costs.
+    approved=os.environ.get("EARNAGENT_PAID_ACTIONS_APPROVED","").strip().lower() in ("1","true","yes")
+    if not approved: return False
+    if str(a.get("action","")).lower()!=name or not a.get("requiresPayment"): return False
+    cost=float(a.get("costUsd") or a.get("cost") or 0)
+    return 0 < cost <= max_cost
 def priority(t):
     try:
         reward=float(t.get("reward") or 0)/1000000
@@ -175,7 +179,7 @@ def main():
     except Exception as e: out["errors"].append({"stage":"settlement","error":str(e)})
     out["ai_enabled"]=bool(os.environ.get("OPENAI_API_KEY"))
     out["paid_actions_used"]=any(bool(x.get("result",{}).get("paid")) for x in out.get("submissions",[]) if isinstance(x,dict))
-    out["selection_policy"]="free_only; paid_actions_disabled_without_explicit_approval"
+    out["selection_policy"]="owner_approved_micro_paid_actions_only; blocked if approval or wallet balance is absent"
     STATE.write_text(json.dumps(out,ensure_ascii=False,separators=(",",":")),encoding="utf-8")
     print(json.dumps(out,ensure_ascii=False))
 if __name__=="__main__": main()
