@@ -23,6 +23,33 @@ def call_any(urls,method,params):
   try: return call(url,method,params)
   except Exception as e: last=e
  raise last or RuntimeError("no RPC endpoint available")
+def blockscout_base_transfers():
+ # Indexed fallback for Base when public JSON-RPC providers reject eth_getLogs.
+ # Require exact native-USDC contract, exact recipient and exact product amount.
+ url=("https://base.blockscout.com/api/v2/addresses/"+WALLET+
+      "/token-transfers?type=ERC-20&filter=to&token="+NETWORKS["base"]["usdc"])
+ req=urllib.request.Request(url,headers={"Accept":"application/json","User-Agent":"EarnAgent-payment-verifier/1.0"})
+ with urllib.request.urlopen(req,timeout=20) as r:
+  payload=json.loads(r.read().decode())
+ items=payload.get("items",[]) if isinstance(payload,dict) else []
+ out=[]
+ for item in items:
+  token=item.get("token") or {}
+  contract=str(token.get("address_hash") or token.get("address") or "").lower()
+  to=str((item.get("to") or {}).get("hash") or "").lower()
+  tx=str(item.get("transaction_hash") or "")
+  if contract!=NETWORKS["base"]["usdc"].lower() or to!=WALLET or not tx:
+   continue
+  raw=item.get("total") or item.get("value")
+  try: amount=float(raw)/1000000.0
+  except Exception: continue
+  product=next((p for p,v in PRICES.items() if abs(amount-v)<0.000001),None)
+  if product:
+   out.append({"tx_hash":tx,"network":"base","product":product,"amount_usd":amount,
+               "block":int(item.get("block_number") or 0),"verified":True,
+               "status":"paid_unclaimed","source":"blockscout"})
+ return out
+
 def main():
  state=json.loads(STATE.read_text()) if STATE.exists() else {}
  seen=set(state.get("tx_keys",[])); transfers=[]; blocks=dict(state.get("last_blocks",{}))
@@ -42,7 +69,21 @@ def main():
      if product: transfers.append({"tx_hash":tx,"network":name,"product":product,"amount_usd":amount,"block":int(log.get("blockNumber","0x0"),16),"verified":True,"status":"paid_unclaimed"})
      seen.add(key)
    blocks[name]=latest
-  except Exception as e: print(json.dumps({"network":name,"error":str(e)[:200]}))
+  except Exception as e:
+   if name=="base":
+    try:
+     fallback=blockscout_base_transfers()
+     for item in fallback:
+      key=name+":"+str(item["tx_hash"])
+      if key not in seen:
+       transfers.append(item); seen.add(key)
+     print(json.dumps({"network":"base","rpc_error":str(e)[:120],
+                       "fallback":"blockscout","fallback_sales":len(fallback)}))
+    except Exception as fe:
+     print(json.dumps({"network":"base","error":str(e)[:120],
+                       "fallback_error":str(fe)[:120]}))
+   else:
+    print(json.dumps({"network":name,"error":str(e)[:200]}))
  old=state.get("verified_transfers",[]); known={(x.get("network"),x.get("tx_hash")) for x in old}
  state={"last_blocks":blocks,"tx_keys":list(seen)[-10000:],"verified_transfers":old+[x for x in transfers if (x["network"],x["tx_hash"]) not in known]}
  STATE.parent.mkdir(exist_ok=True); STATE.write_text(json.dumps(state,separators=(",",":")))
