@@ -163,38 +163,28 @@ def render_direct_checkout(products):
     wallet=WALLET
     prices={p["slug"]:float(p["price"]) for p in products}
     labels={p["slug"]:p["title"] for p in products}
-    contracts={
-        "base":"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-        "arbitrum":"0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
-        "polygon":"0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
-        "optimism":"0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
-    }
-    networks={
-        "base":{"label":"Base","chain_id":8453,"explorer":"https://basescan.org/tx/"},
-        "arbitrum":{"label":"Arbitrum One","chain_id":42161,"explorer":"https://arbiscan.io/tx/"},
-        "polygon":{"label":"Polygon PoS","chain_id":137,"explorer":"https://polygonscan.com/tx/"},
-        "optimism":{"label":"Optimism","chain_id":10,"explorer":"https://optimistic.etherscan.io/tx/"},
-    }
+    contracts={"base":"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913","arbitrum":"0xaf88d065e77c8cC2239327C5EDb3A432268e5831","polygon":"0x3c499c542cef5e3811e1192ce70d8cc03d5c3359","optimism":"0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"}
+    networks={"base":{"label":"Base","chain_id":8453,"rpc":"https://mainnet.base.org","explorer":"https://basescan.org/tx/"},"arbitrum":{"label":"Arbitrum One","chain_id":42161,"rpc":"https://arb1.arbitrum.io/rpc","explorer":"https://arbiscan.io/tx/"},"polygon":{"label":"Polygon PoS","chain_id":137,"rpc":"https://polygon-rpc.com","explorer":"https://polygonscan.com/tx/"},"optimism":{"label":"Optimism","chain_id":10,"rpc":"https://mainnet.optimism.io","explorer":"https://optimistic.etherscan.io/tx/"}}
     data=json.dumps({"prices":prices,"labels":labels,"contracts":contracts,"networks":networks,"wallet":wallet},ensure_ascii=False)
-    html="""<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>EarnAgent — USDC checkout</title>
-<style>body{font:16px system-ui,sans-serif;margin:0;background:#101820;color:#f5f1e8}main{max-width:820px;margin:auto;padding:28px}.card{background:#18252e;padding:22px;border-radius:16px;margin:16px 0}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}select{font:inherit;padding:11px;width:100%;box-sizing:border-box}code{display:block;overflow-wrap:anywhere;padding:12px;background:#24333d;border-radius:8px}.cta{display:inline-block;padding:11px 14px;background:#d8f3dc;color:#10201b;border-radius:9px;text-decoration:none;border:0;cursor:pointer}small{opacity:.82}@media(max-width:650px){.row{grid-template-columns:1fr}}</style></head>
+    html="""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EarnAgent — USDC checkout</title>
+<style>body{font:16px system-ui,sans-serif;margin:0;background:#101820;color:#f5f1e8}main{max-width:820px;margin:auto;padding:28px}.card{background:#18252e;padding:22px;border-radius:16px;margin:16px 0}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}select,input{font:inherit;padding:11px;width:100%;box-sizing:border-box}code{display:block;overflow-wrap:anywhere;padding:12px;background:#24333d;border-radius:8px}.cta{display:inline-block;padding:11px 14px;background:#d8f3dc;color:#10201b;border-radius:9px;text-decoration:none;border:0;cursor:pointer;margin-top:8px}.status{padding:14px;border-radius:10px;margin-top:12px;background:#24333d}small{opacity:.82}@media(max-width:650px){.row{grid-template-columns:1fr}}</style></head>
 <body><main><h1>EarnAgent checkout</h1><div class="card"><div class="row"><label>Product<select id="product"></select></label><label>Network<select id="network"></select></label></div>
-<p>Exact price: <b id="amount">—</b> USDC</p><p>USDC contract: <code id="contract"></code></p><p>Recipient wallet:</p><code id="wallet"></code><button class="cta" id="copy">Copy wallet</button>
-<p><small>Send the exact USDC amount on the selected network to the recipient above. EarnAgent counts a sale only after an on-chain transfer matches product amount, native USDC contract, recipient and network. After payment, enter the transaction hash to verify.</small></p>
-<p><a id="verify" class="cta" href="#">Verify payment</a></p></div><p><a href="index.html" style="color:#b9e4ff">Back to store</a></p>
+<p>Exact price: <b id="amount">—</b> USDC</p><p>Native USDC contract:</p><code id="contract"></code><p>Recipient wallet:</p><code id="wallet"></code><button class="cta" id="copy">Copy wallet</button>
+<p><small>Send the exact USDC amount on the selected network. A sale is counted only when the transaction matches the selected product, native USDC contract, recipient and network.</small></p>
+<hr><h3>Already paid?</h3><input id="tx" placeholder="Paste transaction hash (0x…)" autocomplete="off"><button class="cta" id="verify">Verify payment</button><div id="out" class="status">Waiting for transaction hash.</div></div><p><a href="index.html" style="color:#b9e4ff">Back to store</a></p>
 <script>
-const catalog=CATALOG;const qs=new URLSearchParams(location.search);
-const productEl=document.getElementById("product"),networkEl=document.getElementById("network");
+const catalog=CATALOG, qs=new URLSearchParams(location.search), productEl=document.getElementById("product"), networkEl=document.getElementById("network");
 Object.entries(catalog.labels).forEach(([k,v])=>{const o=document.createElement("option");o.value=k;o.textContent=v+" — $"+Number(catalog.prices[k]).toFixed(2);productEl.appendChild(o)});
 Object.entries(catalog.networks).forEach(([k,v])=>{const o=document.createElement("option");o.value=k;o.textContent=v.label+" (chain "+v.chain_id+")";networkEl.appendChild(o)});
-productEl.value=catalog.prices[qs.get("product")]?qs.get("product"):Object.keys(catalog.prices)[0];
-networkEl.value=catalog.networks[qs.get("network")]?qs.get("network"):"base";
-function render(){const p=productEl.value,n=networkEl.value;document.getElementById("amount").textContent=Number(catalog.prices[p]).toFixed(2);document.getElementById("contract").textContent=catalog.contracts[n];document.getElementById("wallet").textContent=catalog.wallet;document.getElementById("verify").href="verify.html?product="+encodeURIComponent(p)+"&network="+encodeURIComponent(n);history.replaceState(null,"","pay.html?product="+encodeURIComponent(p)+"&network="+encodeURIComponent(n))}
-productEl.onchange=render;networkEl.onchange=render;document.getElementById("copy").onclick=()=>navigator.clipboard&&navigator.clipboard.writeText(catalog.wallet);render();
+productEl.value=catalog.prices[qs.get("product")]!=null?qs.get("product"):Object.keys(catalog.prices)[0];networkEl.value=catalog.networks[qs.get("network")]?qs.get("network"):"base";
+function render(){const p=productEl.value,n=networkEl.value;amount.textContent=Number(catalog.prices[p]).toFixed(2);contract.textContent=catalog.contracts[n];wallet.textContent=catalog.wallet;history.replaceState(null,"","pay.html?product="+encodeURIComponent(p)+"&network="+encodeURIComponent(n))}
+productEl.onchange=render;networkEl.onchange=render;copy.onclick=()=>navigator.clipboard&&navigator.clipboard.writeText(catalog.wallet);
+async function rpc(url,method,params){const r=await fetch(url,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method,params})});if(!r.ok)throw Error("RPC unavailable");const j=await r.json();return j.result}
+verify.onclick=async()=>{const hash=tx.value.trim(),p=productEl.value,n=networkEl.value;if(!/^0x[0-9a-fA-F]{64}$/.test(hash)){out.textContent="Enter a valid transaction hash.";return}out.textContent="Checking the transaction…";try{const rec=await rpc(catalog.networks[n].rpc,"eth_getTransactionReceipt",[hash]);if(!rec||!rec.logs)throw Error("Transaction not found yet.");const topic="0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55aeb2a5b4e5";const recipient=catalog.wallet.toLowerCase().replace("0x","").padStart(64,"0");const expected=Math.round(Number(catalog.prices[p])*1e6).toString(16).padStart(64,"0");const ok=rec.logs.some(x=>x.address.toLowerCase()===catalog.contracts[n].toLowerCase()&&x.topics&&x.topics[0].toLowerCase()===topic&&x.topics[2]&&x.topics[2].slice(-64).toLowerCase()===recipient&&BigInt(x.data)===BigInt("0x"+expected));if(!ok)throw Error("No exact matching USDC transfer found.");out.innerHTML='<b>Payment verified on-chain.</b><br><a href="'+catalog.networks[n].explorer+hash+'" target="_blank" rel="noopener">View transaction</a><br><small>EarnAgent's server-side verifier will count the sale on its next cycle.</small>'}catch(e){out.textContent=e.message||"Verification failed."}};
+render();
 </script></main></body></html>"""
-    html=html.replace("CATALOG",data)
-    (ROOT/"pay.html").write_text(html,encoding="utf-8")
+    (ROOT/"pay.html").write_text(html.replace("CATALOG",data),encoding="utf-8")
+
 
 def render_discovery_files(products):
     """Build one sitemap from the complete generated acquisition surface."""
