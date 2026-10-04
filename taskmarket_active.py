@@ -4,8 +4,8 @@ from office_memory import remember
 from pathlib import Path
 OUT=Path("deliverables"); OUT.mkdir(exist_ok=True)
 STATE=Path("data/taskmarket_active.json"); STATE.parent.mkdir(exist_ok=True)
-MAX_ACTIONS=int(os.environ.get("EARNAGENT_MAX_ACTIONS","16"))
-MAX_AI=int(os.environ.get("EARNAGENT_MAX_AI","6"))
+MAX_ACTIONS=int(os.environ.get("EARNAGENT_MAX_ACTIONS","24"))
+MAX_AI=int(os.environ.get("EARNAGENT_MAX_AI","10"))
 MODEL=os.environ.get("EARNAGENT_MODEL","gpt-5.6-luna")
 def cli(*args):
     p=subprocess.run(["taskmarket",*args],capture_output=True,text=True,timeout=120)
@@ -178,7 +178,7 @@ def main():
     except Exception as e: out["errors"].append({"stage":"settlement","error":str(e)})
     out["ai_enabled"]=bool(os.environ.get("OPENAI_API_KEY"))
     out["paid_actions_used"]=any(bool(x.get("result",{}).get("paid")) for x in out.get("submissions",[]) if isinstance(x,dict))
-    out["selection_policy"]="owner_approved_micro_paid_actions_only; blocked if approval or wallet balance is absent"
+    out["selection_policy"]="zero_user_dependency: prefer funded free bounties; paid actions only when already funded and explicitly approved"
     STATE.write_text(json.dumps(out,ensure_ascii=False,separators=(",",":")),encoding="utf-8")
     print(json.dumps(out,ensure_ascii=False))
 if __name__=="__main__": main()
