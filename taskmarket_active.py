@@ -5,7 +5,7 @@ from pathlib import Path
 OUT=Path("deliverables"); OUT.mkdir(exist_ok=True)
 STATE=Path("data/taskmarket_active.json"); STATE.parent.mkdir(exist_ok=True)
 MAX_ACTIONS=int(os.environ.get("EARNAGENT_MAX_ACTIONS","16"))
-MAX_AI=int(os.environ.get("EARNAGENT_MAX_AI","3"))
+MAX_AI=int(os.environ.get("EARNAGENT_MAX_AI","6"))
 MODEL=os.environ.get("EARNAGENT_MODEL","gpt-5.6-luna")
 def cli(*args):
     p=subprocess.run(["taskmarket",*args],capture_output=True,text=True,timeout=120)
@@ -143,8 +143,7 @@ def main():
             office=None
             if os.environ.get("OPENAI_API_KEY") and ai_count < MAX_AI:
                 office=collaborate({"description":desc,"reward_usd":float(t.get("reward") or 0)/1000000,"mode":mode,"task_id":task_id},fmt)
-                ai_count += 1
-            if office:
+                # Office review is planning, not the final deliverable call.\n            if office:
                 decision=office.get("decision") or office.get("recommendation")
                 out.setdefault("office_reviews",[]).append({"id":task_id,"roles":office.get("office_roles",[]),"model":office.get("model"),"decision":decision,"fixer":office.get("fixer")})
                 if decision in ("skip","hold"):
@@ -156,7 +155,7 @@ def main():
                     out["skipped"].append({"id":task_id,"reason":"AI_required_but_unavailable"})
                     continue
                 ok,meta=ai(desc,fmt,path)
-                ai_count += 1
+                if ok: ai_count += 1
             if not ok: out["skipped"].append({"id":task_id,"reason":meta}); continue
             if not chosen_submit:
                 out["skipped"].append({"id":task_id,"reason":"no_verified_submit_action"})
