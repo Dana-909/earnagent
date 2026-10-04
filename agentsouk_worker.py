@@ -6,8 +6,28 @@ from pathlib import Path
 STATE=Path("data/agentsouk_state.json")
 LOG=Path("data/agentsouk_run.json")
 BASE="https://api.agentsouk.dev"
-NAME="EarnAgent URL Intelligence"
-PRICE=450000  # 0.45 USDC
+LISTINGS=[
+    {
+        "title":"EarnAgent Web Fact Check", "price":20000,
+        "description":"Fetch up to three public URLs and answer one concrete factual question with source-grounded evidence. Useful when the buyer needs live web access and a second check, not a template or generic summary.",
+        "objective_hint":"question", "max_urls":3,
+    },
+    {
+        "title":"EarnAgent Competitor Snapshot", "price":50000,
+        "description":"Fetch up to five public competitor/product URLs and return a concise evidence-grounded comparison: current differences, notable changes, risks and decision-relevant takeaways.",
+        "objective_hint":"comparison", "max_urls":5,
+    },
+    {
+        "title":"EarnAgent Public Vendor Due Diligence", "price":80000,
+        "description":"Research a public-facing vendor or product across up to five URLs and return evidence, inconsistencies, risks and a practical recommendation. No private credentials or private pages.",
+        "objective_hint":"due diligence", "max_urls":5,
+    },
+    {
+        "title":"EarnAgent URL Intelligence", "price":450000,
+        "description":"Fetch up to five public URLs and return a grounded comparison/decision brief. Live retrieval, key claims, differences, risks and actionable takeaways.",
+        "objective_hint":"comparison", "max_urls":5,
+    },
+]
 
 def fetch(url, max_bytes=120000):
     p=urllib.parse.urlparse(url)
@@ -66,25 +86,28 @@ def main():
         mine=aw.listings.mine()
         listings=mine.get("data",mine) if isinstance(mine,dict) else mine
         listings=listings if isinstance(listings,list) else []
-        listing=next((x for x in listings if x.get("title")==NAME),None)
-        if not listing:
-            listing=aw.listings.create(
-                title=NAME,
-                description="Fetch up to five public URLs and return a grounded comparison/decision brief. Live retrieval, key claims, differences, risks and actionable takeaways. No credentials, private pages or local-network targets.",
-                category="research",
-                price=PRICE,
-                input_schema={"type":"object","required":["urls","objective"],"properties":{
-                    "urls":{"type":"array","minItems":1,"maxItems":5,"items":{"type":"string","format":"uri"}},
-                    "objective":{"type":"string","minLength":10,"maxLength":1200}
-                }},
-                output_schema={"type":"object","required":["objective","sources","findings","risks","recommendation"],"properties":{
-                    "objective":{"type":"string"},"sources":{"type":"array"},"findings":{"type":"array"},
-                    "risks":{"type":"array"},"recommendation":{"type":"string"}}
-                },
-                answer_within_seconds=180,
-                max_revisions=1
-            )
-        listing_id=listing.get("id")
+        listing_ids=[]
+        for spec in LISTINGS:
+            listing=next((x for x in listings if x.get("title")==spec["title"]),None)
+            if not listing:
+                listing=aw.listings.create(
+                    title=spec["title"],
+                    description=spec["description"]+" No credentials, private pages or local-network targets.",
+                    category="research",
+                    price=spec["price"],
+                    input_schema={"type":"object","required":["urls","objective"],"properties":{
+                        "urls":{"type":"array","minItems":1,"maxItems":spec["max_urls"],"items":{"type":"string","format":"uri"}},
+                        "objective":{"type":"string","minLength":10,"maxLength":1200}
+                    }},
+                    output_schema={"type":"object","required":["objective","sources","findings","risks","recommendation"],"properties":{
+                        "objective":{"type":"string"},"sources":{"type":"array"},"findings":{"type":"array"},
+                        "risks":{"type":"array"},"recommendation":{"type":"string"}}
+                    },
+                    answer_within_seconds=180,
+                    max_revisions=1
+                )
+            listing_ids.append(listing.get("id"))
+        listing_id=listing_ids[-1] if listing_ids else None
         jobs=aw.jobs.list(role="seller")
         rows=jobs.get("data",jobs) if isinstance(jobs,dict) else jobs
         rows=rows if isinstance(rows,list) else []
