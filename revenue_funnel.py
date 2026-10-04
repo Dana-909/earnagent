@@ -6,14 +6,20 @@ FREE=ROOT/"free"
 FREE.mkdir(parents=True,exist_ok=True)
 
 TOOLS=[
- ("invoice-estimator","Free Invoice & Quote Estimator","Estimate invoice totals and create a print-ready quote in your browser.","freelancer-invoice-kit","$7"),
- ("kpi-checker","Free Small-Business KPI Checker","Enter four numbers and instantly see conversion and revenue-per-lead metrics.","small-business-kpi-dashboard","$9"),
- ("job-tracker-lite","Free Job Application Tracker","A lightweight private tracker you can use before upgrading to the full application kit.","job-application-tracker","$4"),
+ ("marketplace-profit-checker","Free Marketplace Profit Leak Checker","Estimate how much margin is disappearing into fees, ads, returns, discounts and manual operations.","marketplace-profit-leak-audit","$29"),
+ ("seller-kpi-checker","Free Seller KPI Checker","Enter orders, revenue, fees, ads and returns to get a fast contribution-margin snapshot.","ecommerce-kpi-review-kit","$24"),
+ ("cashflow-checker","Free Seller Cashflow Checker","Estimate the next payout, operating outflow and cash buffer needed for a marketplace business.","seller-cashflow-planner","$19"),
 ]
 
 
 
 ACQUISITION_GUIDES=[
+ ("marketplace-profit-leak-audit-guide","Marketplace Profit Leak Audit for Sellers","Find the operational leaks that quietly reduce marketplace profit. Start with the free checker, then upgrade to the reusable audit kit.","marketplace-profit-checker.html","marketplace-profit-leak-audit"),
+ ("seller-margin-calculator","Marketplace Seller Margin Calculator","Estimate contribution margin after marketplace fees, advertising, returns and discounts.","marketplace-profit-checker.html","marketplace-profit-leak-audit"),
+ ("seller-ops-dashboard","Marketplace Operations Dashboard","Track the metrics that matter weekly instead of juggling multiple spreadsheets.","seller-kpi-checker.html","marketplace-ops-dashboard"),
+ ("ecommerce-automation-blueprint","Ecommerce Automation Blueprint","Map repetitive seller operations to practical AI and workflow automations.","seller-kpi-checker.html","marketplace-automation-blueprint"),
+ ("cashflow-marketplace-seller","Marketplace Seller Cashflow Planner","Plan payouts, fees, advertising and upcoming cash needs in one lightweight workflow.","cashflow-checker.html","seller-cashflow-planner"),
+ ("ai-marketplace-listing","AI Marketplace Listing Optimization","Build repeatable listing experiments instead of rewriting product copy blindly.","marketplace-profit-checker.html","ai-listing-optimization-kit"),
  ("invoice-template-freelancer","Invoice Template for Freelancers","A practical browser-first workflow for creating quotes and estimating invoice totals. Start free, then use the reusable invoice kit.","invoice-estimator.html","freelancer-invoice-kit"),
  ("invoice-quote-small-business","Invoice and Quote Workflow for Small Businesses","Estimate project totals quickly and keep a repeatable quote workflow instead of rebuilding documents from scratch.","invoice-estimator.html","freelancer-invoice-kit"),
  ("kpi-calculator-small-business","Small Business KPI Calculator","Calculate conversion rate, revenue per lead and ROAS from four simple inputs.","kpi-checker.html","small-business-kpi-dashboard"),
@@ -79,11 +85,349 @@ def page(slug,title,desc,product,price,body):
 </main></body></html>"""
     (FREE/slug).write_text(c,encoding="utf-8")
 
-page("invoice-estimator.html",TOOLS[0][1],TOOLS[0][2],TOOLS[0][3],TOOLS[0][4],"""<div class="grid"><label>Hours<input id="h" type="number" value="10" min="0"></label><label>Hourly rate ($)<input id="r" type="number" value="50" min="0"></label><label>Expenses ($)<input id="e" type="number" value="0" min="0"></label><label>Tax (%)<input id="t" type="number" value="0" min="0"></label></div><button onclick="calc()">Calculate</button><p id="out" class="result"></p><script>function calc(){let h=+document.getElementById('h').value,r=+document.getElementById('r').value,e=+document.getElementById('e').value,t=+document.getElementById('t').value;let sub=h*r+e,total=sub*(1+t/100);document.getElementById('out').textContent='Estimated total: $'+total.toFixed(2)}</script>""")
+page("marketplace-profit-checker.html",TOOLS[0][1],TOOLS[0][2],TOOLS[0][3],TOOLS[0][4],"""<div class="grid"><label>Orders<input id="o" type="number" value="100" min="0"></label><label>Revenue ($)<input id="rev" type="number" value="5000" min="0"></label><label>Marketplace fees ($)<input id="fees" type="number" value="750" min="0"></label><label>Ads ($)<input id="ads" type="number" value="500" min="0"></label><label>Returns ($)<input id="ret" type="number" value="200" min="0"></label><label>Discounts ($)<input id="disc" type="number" value="100" min="0"></label><label>Manual hours<input id="mh" type="number" value="20" min="0"></label><label>Hourly value ($)<input id="hv" type="number" value="25" min="0"></label></div><button onclick="calc()">Check profit leaks</button><p id="out" class="result"></p><script>function calc(){let rev=+document.getElementById('rev').value,fees=+document.getElementById('fees').value,ads=+document.getElementById('ads').value,ret=+document.getElementById('ret').value,disc=+document.getElementById('disc').value,mh=+document.getElementById('mh').value,hv=+document.getElementById('hv').value;let leaks=fees+ads+ret+disc+mh*hv;let m=rev?100*(rev-leaks)/rev:0;document.getElementById('out').textContent='Estimated contribution after listed leaks:  type="number" value="10" min="0"></label><label>Hourly rate ($)<input id="r" type="number" value="50" min="0"></label><label>Expenses ($)<input id="e" type="number" value="0" min="0"></label><label>Tax (%)<input id="t" type="number" value="0" min="0"></label></div><button onclick="calc()">Calculate</button><p id="out" class="result"></p><script>function calc(){let h=+document.getElementById('h').value,r=+document.getElementById('r').value,e=+document.getElementById('e').value,t=+document.getElementById('t').value;let sub=h*r+e,total=sub*(1+t/100);document.getElementById('out').textContent='Estimated total: $'+total.toFixed(2)}</script>""")
 
-page("kpi-checker.html",TOOLS[1][1],TOOLS[1][2],TOOLS[1][3],TOOLS[1][4],"""<div class="grid"><label>Leads<input id="l" type="number" value="100" min="0"></label><label>Customers<input id="c" type="number" value="10" min="0"></label><label>Revenue ($)<input id="rev" type="number" value="1000" min="0"></label><label>Marketing spend ($)<input id="sp" type="number" value="200" min="0"></label></div><button onclick="calc()">Check KPIs</button><p id="out" class="result"></p><script>function calc(){let l=+document.getElementById('l').value,c=+document.getElementById('c').value,rev=+document.getElementById('rev').value,sp=+document.getElementById('sp').value;let cr=l?100*c/l:0, rpl=l?rev/l:0,roas=sp?rev/sp:0;document.getElementById('out').textContent='Conversion '+cr.toFixed(1)+'% · Revenue/lead $'+rpl.toFixed(2)+' · ROAS '+roas.toFixed(2)+'x'}</script>""")
+page("seller-kpi-checker.html",TOOLS[1][1],TOOLS[1][2],TOOLS[1][3],TOOLS[1][4],"""<div class="grid"><label>Orders<input id="l" type="number" value="100" min="0"></label><label>Revenue ($)<input id="rev" type="number" value="5000" min="0"></label><label>Fees ($)<input id="c" type="number" value="750" min="0"></label><label>Ads ($)<input id="sp" type="number" value="500" min="0"></label></div><button onclick="calc()">Check seller KPIs</button><p id="out" class="result"></p><script>function calc(){let o=+l.value,rev=+document.getElementById('rev').value,fees=+c.value,sp=+document.getElementById('sp').value;let aov=o?rev/o:0,margin=rev?100*(rev-fees-sp)/rev:0;out.textContent='AOV  type="number" value="100" min="0"></label><label>Customers<input id="c" type="number" value="10" min="0"></label><label>Revenue ($)<input id="rev" type="number" value="1000" min="0"></label><label>Marketing spend ($)<input id="sp" type="number" value="200" min="0"></label></div><button onclick="calc()">Check KPIs</button><p id="out" class="result"></p><script>function calc(){let l=+document.getElementById('l').value,c=+document.getElementById('c').value,rev=+document.getElementById('rev').value,sp=+document.getElementById('sp').value;let cr=l?100*c/l:0, rpl=l?rev/l:0,roas=sp?rev/sp:0;document.getElementById('out').textContent='Conversion '+cr.toFixed(1)+'% · Revenue/lead $'+rpl.toFixed(2)+' · ROAS '+roas.toFixed(2)+'x'}</script>""")
 
-page("job-tracker-lite.html",TOOLS[2][1],TOOLS[2][2],TOOLS[2][3],TOOLS[2][4],"""<label>Company<input id="co" placeholder="Company name"></label><label>Role<input id="role" placeholder="Role"></label><label>Status<textarea id="st" rows="3" placeholder="Applied / Interview / Follow-up"></textarea></label><button onclick="save()">Save locally</button><p id="out" class="result"></p><script>function save(){let x={company:co.value,role:role.value,status:st.value};localStorage.setItem('earnagent-job',JSON.stringify(x));out.textContent='Saved only in this browser.'}</script>""")
+page("cashflow-checker.html",TOOLS[2][1],TOOLS[2][2],TOOLS[2][3],TOOLS[2][4],"""<div class="grid"><label>Next payout ($)<input id="co" type="number" value="5000"></label><label>Fees due ($)<input id="role" type="number" value="750"></label><label>Ads planned ($)<input id="st" type="number" value="500"></label><label>Other outflows ($)<input id="ob" type="number" value="800"></label><label>Cash on hand ($)<input id="ch" type="number" value="3000"></label></div><button onclick="save()">Calculate cash buffer</button><p id="out" class="result"></p><script>function save(){let payout=+co.value,fees=+role.value,ads=+st.value,other=+ob.value,cash=+ch.value;let net=payout-fees-ads-other;out.textContent='Expected net after listed outflows:  placeholder="Company name"></label><label>Role<input id="role" placeholder="Role"></label><label>Status<textarea id="st" rows="3" placeholder="Applied / Interview / Follow-up"></textarea></label><button onclick="save()">Save locally</button><p id="out" class="result"></p><script>function save(){let x={company:co.value,role:role.value,status:st.value};localStorage.setItem('earnagent-job',JSON.stringify(x));out.textContent='Saved only in this browser.'}</script>""")
+
+links=["<li><a href='free/"+s+".html'>"+html.escape(t)+"</a> — "+html.escape(d)+"</li>" for s,t,d,_,_ in TOOLS]
+index=ROOT/"index.html"
+if index.exists():
+    old=index.read_text(encoding="utf-8")
+    marker="<!-- EARNAGENT_FREE_TOOLS -->"
+    block=marker+"<section><h2>Free tools</h2><p>Try these instantly, then upgrade if you need the full reusable kit.</p><ul>"+''.join(links)+"</ul></section>"
+    if marker in old:
+        old=old.split(marker)[0]+block+old.split(marker,1)[1].split("</section>",1)[-1] if "</section>" in old.split(marker,1)[1] else old
+    else:
+        old=old.replace("</main>",block+"</main>")
+    niche_links="<section><h2>Work-specific guides</h2><p>Free tools and focused workflows for common jobs.</p><ul>"+''.join("<li><a href='niches/"+x[0]+".html'>"+html.escape(x[1])+"</a></li>" for x in NICHE_PAGES)+"</ul></section>"
+    if "</main>" in old:
+        old=old.replace("</main>",niche_links+"</main>")
+    index.write_text(old,encoding="utf-8")
+
+(FREE/"index.html").write_text("<!doctype html><meta charset='utf-8'><title>Free EarnAgent tools</title><h1>Free EarnAgent tools</h1><ul>"+''.join(links)+"</ul>",encoding="utf-8")
+build_niche_pages()
+build_acquisition_guides()
+# Publish a fresh crawl map after all generated acquisition pages exist.
+base_urls=["store/","store/free/","store/niches/"]+[("store/free/"+x[0]+".html") for x in TOOLS]+[("store/niches/"+x[0]+".html") for x in NICHE_PAGES]+["store/guides/"]+[("store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+base="https://dana-909.github.io/earnagent/"
+base_urls=[base+"store/",base+"store/free/",base+"store/niches/",base+"store/guides/"]+[(base+"store/free/"+x[0]+".html") for x in TOOLS]+[(base+"store/niches/"+x[0]+".html") for x in NICHE_PAGES]+[(base+"store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+xml="<?xml version=\"1.0\" encoding=\"UTF-8\"?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"+"".join("<url><loc>"+html.escape(u)+"</loc></url>" for u in base_urls)+"</urlset>"
+(ROOT/"sitemap.xml").write_text(xml,encoding="utf-8")
+(ROOT/"robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: sitemap.xml\n",encoding="utf-8")
+print({"free_tools_and_niche_pages":len(TOOLS),"niche_pages":len(NICHE_PAGES),"acquisition_guides":len(ACQUISITION_GUIDES),"status":"built"})
++(rev-leaks).toFixed(2)+' · '+m.toFixed(1)+'% before product cost and other overhead.'}</script>""") type="number" value="10" min="0"></label><label>Hourly rate ($)<input id="r" type="number" value="50" min="0"></label><label>Expenses ($)<input id="e" type="number" value="0" min="0"></label><label>Tax (%)<input id="t" type="number" value="0" min="0"></label></div><button onclick="calc()">Calculate</button><p id="out" class="result"></p><script>function calc(){let h=+document.getElementById('h').value,r=+document.getElementById('r').value,e=+document.getElementById('e').value,t=+document.getElementById('t').value;let sub=h*r+e,total=sub*(1+t/100);document.getElementById('out').textContent='Estimated total: $'+total.toFixed(2)}</script>""")
+
+page("seller-kpi-checker.html",TOOLS[1][1],TOOLS[1][2],TOOLS[1][3],TOOLS[1][4],"""<div class="grid"><label>Leads<input id="l" type="number" value="100" min="0"></label><label>Customers<input id="c" type="number" value="10" min="0"></label><label>Revenue ($)<input id="rev" type="number" value="1000" min="0"></label><label>Marketing spend ($)<input id="sp" type="number" value="200" min="0"></label></div><button onclick="calc()">Check KPIs</button><p id="out" class="result"></p><script>function calc(){let l=+document.getElementById('l').value,c=+document.getElementById('c').value,rev=+document.getElementById('rev').value,sp=+document.getElementById('sp').value;let cr=l?100*c/l:0, rpl=l?rev/l:0,roas=sp?rev/sp:0;document.getElementById('out').textContent='Conversion '+cr.toFixed(1)+'% · Revenue/lead $'+rpl.toFixed(2)+' · ROAS '+roas.toFixed(2)+'x'}</script>""")
+
+page("cashflow-checker.html",TOOLS[2][1],TOOLS[2][2],TOOLS[2][3],TOOLS[2][4],"""<label>Company<input id="co" placeholder="Company name"></label><label>Role<input id="role" placeholder="Role"></label><label>Status<textarea id="st" rows="3" placeholder="Applied / Interview / Follow-up"></textarea></label><button onclick="save()">Save locally</button><p id="out" class="result"></p><script>function save(){let x={company:co.value,role:role.value,status:st.value};localStorage.setItem('earnagent-job',JSON.stringify(x));out.textContent='Saved only in this browser.'}</script>""")
+
+links=["<li><a href='free/"+s+".html'>"+html.escape(t)+"</a> — "+html.escape(d)+"</li>" for s,t,d,_,_ in TOOLS]
+index=ROOT/"index.html"
+if index.exists():
+    old=index.read_text(encoding="utf-8")
+    marker="<!-- EARNAGENT_FREE_TOOLS -->"
+    block=marker+"<section><h2>Free tools</h2><p>Try these instantly, then upgrade if you need the full reusable kit.</p><ul>"+''.join(links)+"</ul></section>"
+    if marker in old:
+        old=old.split(marker)[0]+block+old.split(marker,1)[1].split("</section>",1)[-1] if "</section>" in old.split(marker,1)[1] else old
+    else:
+        old=old.replace("</main>",block+"</main>")
+    niche_links="<section><h2>Work-specific guides</h2><p>Free tools and focused workflows for common jobs.</p><ul>"+''.join("<li><a href='niches/"+x[0]+".html'>"+html.escape(x[1])+"</a></li>" for x in NICHE_PAGES)+"</ul></section>"
+    if "</main>" in old:
+        old=old.replace("</main>",niche_links+"</main>")
+    index.write_text(old,encoding="utf-8")
+
+(FREE/"index.html").write_text("<!doctype html><meta charset='utf-8'><title>Free EarnAgent tools</title><h1>Free EarnAgent tools</h1><ul>"+''.join(links)+"</ul>",encoding="utf-8")
+build_niche_pages()
+build_acquisition_guides()
+# Publish a fresh crawl map after all generated acquisition pages exist.
+base_urls=["store/","store/free/","store/niches/"]+[("store/free/"+x[0]+".html") for x in TOOLS]+[("store/niches/"+x[0]+".html") for x in NICHE_PAGES]+["store/guides/"]+[("store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+base="https://dana-909.github.io/earnagent/"
+base_urls=[base+"store/",base+"store/free/",base+"store/niches/",base+"store/guides/"]+[(base+"store/free/"+x[0]+".html") for x in TOOLS]+[(base+"store/niches/"+x[0]+".html") for x in NICHE_PAGES]+[(base+"store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+xml="<?xml version=\"1.0\" encoding=\"UTF-8\"?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"+"".join("<url><loc>"+html.escape(u)+"</loc></url>" for u in base_urls)+"</urlset>"
+(ROOT/"sitemap.xml").write_text(xml,encoding="utf-8")
+(ROOT/"robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: sitemap.xml\n",encoding="utf-8")
+print({"free_tools_and_niche_pages":len(TOOLS),"niche_pages":len(NICHE_PAGES),"acquisition_guides":len(ACQUISITION_GUIDES),"status":"built"})
++aov.toFixed(2)+' · Contribution after fees/ads '+margin.toFixed(1)+'%'}</script>""") type="number" value="100" min="0"></label><label>Customers<input id="c" type="number" value="10" min="0"></label><label>Revenue ($)<input id="rev" type="number" value="1000" min="0"></label><label>Marketing spend ($)<input id="sp" type="number" value="200" min="0"></label></div><button onclick="calc()">Check KPIs</button><p id="out" class="result"></p><script>function calc(){let l=+document.getElementById('l').value,c=+document.getElementById('c').value,rev=+document.getElementById('rev').value,sp=+document.getElementById('sp').value;let cr=l?100*c/l:0, rpl=l?rev/l:0,roas=sp?rev/sp:0;document.getElementById('out').textContent='Conversion '+cr.toFixed(1)+'% · Revenue/lead $'+rpl.toFixed(2)+' · ROAS '+roas.toFixed(2)+'x'}</script>""")
+
+page("cashflow-checker.html",TOOLS[2][1],TOOLS[2][2],TOOLS[2][3],TOOLS[2][4],"""<label>Company<input id="co" placeholder="Company name"></label><label>Role<input id="role" placeholder="Role"></label><label>Status<textarea id="st" rows="3" placeholder="Applied / Interview / Follow-up"></textarea></label><button onclick="save()">Save locally</button><p id="out" class="result"></p><script>function save(){let x={company:co.value,role:role.value,status:st.value};localStorage.setItem('earnagent-job',JSON.stringify(x));out.textContent='Saved only in this browser.'}</script>""")
+
+links=["<li><a href='free/"+s+".html'>"+html.escape(t)+"</a> — "+html.escape(d)+"</li>" for s,t,d,_,_ in TOOLS]
+index=ROOT/"index.html"
+if index.exists():
+    old=index.read_text(encoding="utf-8")
+    marker="<!-- EARNAGENT_FREE_TOOLS -->"
+    block=marker+"<section><h2>Free tools</h2><p>Try these instantly, then upgrade if you need the full reusable kit.</p><ul>"+''.join(links)+"</ul></section>"
+    if marker in old:
+        old=old.split(marker)[0]+block+old.split(marker,1)[1].split("</section>",1)[-1] if "</section>" in old.split(marker,1)[1] else old
+    else:
+        old=old.replace("</main>",block+"</main>")
+    niche_links="<section><h2>Work-specific guides</h2><p>Free tools and focused workflows for common jobs.</p><ul>"+''.join("<li><a href='niches/"+x[0]+".html'>"+html.escape(x[1])+"</a></li>" for x in NICHE_PAGES)+"</ul></section>"
+    if "</main>" in old:
+        old=old.replace("</main>",niche_links+"</main>")
+    index.write_text(old,encoding="utf-8")
+
+(FREE/"index.html").write_text("<!doctype html><meta charset='utf-8'><title>Free EarnAgent tools</title><h1>Free EarnAgent tools</h1><ul>"+''.join(links)+"</ul>",encoding="utf-8")
+build_niche_pages()
+build_acquisition_guides()
+# Publish a fresh crawl map after all generated acquisition pages exist.
+base_urls=["store/","store/free/","store/niches/"]+[("store/free/"+x[0]+".html") for x in TOOLS]+[("store/niches/"+x[0]+".html") for x in NICHE_PAGES]+["store/guides/"]+[("store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+base="https://dana-909.github.io/earnagent/"
+base_urls=[base+"store/",base+"store/free/",base+"store/niches/",base+"store/guides/"]+[(base+"store/free/"+x[0]+".html") for x in TOOLS]+[(base+"store/niches/"+x[0]+".html") for x in NICHE_PAGES]+[(base+"store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+xml="<?xml version=\"1.0\" encoding=\"UTF-8\"?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"+"".join("<url><loc>"+html.escape(u)+"</loc></url>" for u in base_urls)+"</urlset>"
+(ROOT/"sitemap.xml").write_text(xml,encoding="utf-8")
+(ROOT/"robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: sitemap.xml\n",encoding="utf-8")
+print({"free_tools_and_niche_pages":len(TOOLS),"niche_pages":len(NICHE_PAGES),"acquisition_guides":len(ACQUISITION_GUIDES),"status":"built"})
++(rev-leaks).toFixed(2)+' · '+m.toFixed(1)+'% before product cost and other overhead.'}</script>""") type="number" value="10" min="0"></label><label>Hourly rate ($)<input id="r" type="number" value="50" min="0"></label><label>Expenses ($)<input id="e" type="number" value="0" min="0"></label><label>Tax (%)<input id="t" type="number" value="0" min="0"></label></div><button onclick="calc()">Calculate</button><p id="out" class="result"></p><script>function calc(){let h=+document.getElementById('h').value,r=+document.getElementById('r').value,e=+document.getElementById('e').value,t=+document.getElementById('t').value;let sub=h*r+e,total=sub*(1+t/100);document.getElementById('out').textContent='Estimated total: $'+total.toFixed(2)}</script>""")
+
+page("seller-kpi-checker.html",TOOLS[1][1],TOOLS[1][2],TOOLS[1][3],TOOLS[1][4],"""<div class="grid"><label>Leads<input id="l" type="number" value="100" min="0"></label><label>Customers<input id="c" type="number" value="10" min="0"></label><label>Revenue ($)<input id="rev" type="number" value="1000" min="0"></label><label>Marketing spend ($)<input id="sp" type="number" value="200" min="0"></label></div><button onclick="calc()">Check KPIs</button><p id="out" class="result"></p><script>function calc(){let l=+document.getElementById('l').value,c=+document.getElementById('c').value,rev=+document.getElementById('rev').value,sp=+document.getElementById('sp').value;let cr=l?100*c/l:0, rpl=l?rev/l:0,roas=sp?rev/sp:0;document.getElementById('out').textContent='Conversion '+cr.toFixed(1)+'% · Revenue/lead $'+rpl.toFixed(2)+' · ROAS '+roas.toFixed(2)+'x'}</script>""")
+
+page("cashflow-checker.html",TOOLS[2][1],TOOLS[2][2],TOOLS[2][3],TOOLS[2][4],"""<label>Company<input id="co" placeholder="Company name"></label><label>Role<input id="role" placeholder="Role"></label><label>Status<textarea id="st" rows="3" placeholder="Applied / Interview / Follow-up"></textarea></label><button onclick="save()">Save locally</button><p id="out" class="result"></p><script>function save(){let x={company:co.value,role:role.value,status:st.value};localStorage.setItem('earnagent-job',JSON.stringify(x));out.textContent='Saved only in this browser.'}</script>""")
+
+links=["<li><a href='free/"+s+".html'>"+html.escape(t)+"</a> — "+html.escape(d)+"</li>" for s,t,d,_,_ in TOOLS]
+index=ROOT/"index.html"
+if index.exists():
+    old=index.read_text(encoding="utf-8")
+    marker="<!-- EARNAGENT_FREE_TOOLS -->"
+    block=marker+"<section><h2>Free tools</h2><p>Try these instantly, then upgrade if you need the full reusable kit.</p><ul>"+''.join(links)+"</ul></section>"
+    if marker in old:
+        old=old.split(marker)[0]+block+old.split(marker,1)[1].split("</section>",1)[-1] if "</section>" in old.split(marker,1)[1] else old
+    else:
+        old=old.replace("</main>",block+"</main>")
+    niche_links="<section><h2>Work-specific guides</h2><p>Free tools and focused workflows for common jobs.</p><ul>"+''.join("<li><a href='niches/"+x[0]+".html'>"+html.escape(x[1])+"</a></li>" for x in NICHE_PAGES)+"</ul></section>"
+    if "</main>" in old:
+        old=old.replace("</main>",niche_links+"</main>")
+    index.write_text(old,encoding="utf-8")
+
+(FREE/"index.html").write_text("<!doctype html><meta charset='utf-8'><title>Free EarnAgent tools</title><h1>Free EarnAgent tools</h1><ul>"+''.join(links)+"</ul>",encoding="utf-8")
+build_niche_pages()
+build_acquisition_guides()
+# Publish a fresh crawl map after all generated acquisition pages exist.
+base_urls=["store/","store/free/","store/niches/"]+[("store/free/"+x[0]+".html") for x in TOOLS]+[("store/niches/"+x[0]+".html") for x in NICHE_PAGES]+["store/guides/"]+[("store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+base="https://dana-909.github.io/earnagent/"
+base_urls=[base+"store/",base+"store/free/",base+"store/niches/",base+"store/guides/"]+[(base+"store/free/"+x[0]+".html") for x in TOOLS]+[(base+"store/niches/"+x[0]+".html") for x in NICHE_PAGES]+[(base+"store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+xml="<?xml version=\"1.0\" encoding=\"UTF-8\"?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"+"".join("<url><loc>"+html.escape(u)+"</loc></url>" for u in base_urls)+"</urlset>"
+(ROOT/"sitemap.xml").write_text(xml,encoding="utf-8")
+(ROOT/"robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: sitemap.xml\n",encoding="utf-8")
+print({"free_tools_and_niche_pages":len(TOOLS),"niche_pages":len(NICHE_PAGES),"acquisition_guides":len(ACQUISITION_GUIDES),"status":"built"})
++net.toFixed(2)+' · cash after payout cycle:  placeholder="Company name"></label><label>Role<input id="role" placeholder="Role"></label><label>Status<textarea id="st" rows="3" placeholder="Applied / Interview / Follow-up"></textarea></label><button onclick="save()">Save locally</button><p id="out" class="result"></p><script>function save(){let x={company:co.value,role:role.value,status:st.value};localStorage.setItem('earnagent-job',JSON.stringify(x));out.textContent='Saved only in this browser.'}</script>""")
+
+links=["<li><a href='free/"+s+".html'>"+html.escape(t)+"</a> — "+html.escape(d)+"</li>" for s,t,d,_,_ in TOOLS]
+index=ROOT/"index.html"
+if index.exists():
+    old=index.read_text(encoding="utf-8")
+    marker="<!-- EARNAGENT_FREE_TOOLS -->"
+    block=marker+"<section><h2>Free tools</h2><p>Try these instantly, then upgrade if you need the full reusable kit.</p><ul>"+''.join(links)+"</ul></section>"
+    if marker in old:
+        old=old.split(marker)[0]+block+old.split(marker,1)[1].split("</section>",1)[-1] if "</section>" in old.split(marker,1)[1] else old
+    else:
+        old=old.replace("</main>",block+"</main>")
+    niche_links="<section><h2>Work-specific guides</h2><p>Free tools and focused workflows for common jobs.</p><ul>"+''.join("<li><a href='niches/"+x[0]+".html'>"+html.escape(x[1])+"</a></li>" for x in NICHE_PAGES)+"</ul></section>"
+    if "</main>" in old:
+        old=old.replace("</main>",niche_links+"</main>")
+    index.write_text(old,encoding="utf-8")
+
+(FREE/"index.html").write_text("<!doctype html><meta charset='utf-8'><title>Free EarnAgent tools</title><h1>Free EarnAgent tools</h1><ul>"+''.join(links)+"</ul>",encoding="utf-8")
+build_niche_pages()
+build_acquisition_guides()
+# Publish a fresh crawl map after all generated acquisition pages exist.
+base_urls=["store/","store/free/","store/niches/"]+[("store/free/"+x[0]+".html") for x in TOOLS]+[("store/niches/"+x[0]+".html") for x in NICHE_PAGES]+["store/guides/"]+[("store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+base="https://dana-909.github.io/earnagent/"
+base_urls=[base+"store/",base+"store/free/",base+"store/niches/",base+"store/guides/"]+[(base+"store/free/"+x[0]+".html") for x in TOOLS]+[(base+"store/niches/"+x[0]+".html") for x in NICHE_PAGES]+[(base+"store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+xml="<?xml version=\"1.0\" encoding=\"UTF-8\"?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"+"".join("<url><loc>"+html.escape(u)+"</loc></url>" for u in base_urls)+"</urlset>"
+(ROOT/"sitemap.xml").write_text(xml,encoding="utf-8")
+(ROOT/"robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: sitemap.xml\n",encoding="utf-8")
+print({"free_tools_and_niche_pages":len(TOOLS),"niche_pages":len(NICHE_PAGES),"acquisition_guides":len(ACQUISITION_GUIDES),"status":"built"})
++(rev-leaks).toFixed(2)+' · '+m.toFixed(1)+'% before product cost and other overhead.'}</script>""") type="number" value="10" min="0"></label><label>Hourly rate ($)<input id="r" type="number" value="50" min="0"></label><label>Expenses ($)<input id="e" type="number" value="0" min="0"></label><label>Tax (%)<input id="t" type="number" value="0" min="0"></label></div><button onclick="calc()">Calculate</button><p id="out" class="result"></p><script>function calc(){let h=+document.getElementById('h').value,r=+document.getElementById('r').value,e=+document.getElementById('e').value,t=+document.getElementById('t').value;let sub=h*r+e,total=sub*(1+t/100);document.getElementById('out').textContent='Estimated total: $'+total.toFixed(2)}</script>""")
+
+page("seller-kpi-checker.html",TOOLS[1][1],TOOLS[1][2],TOOLS[1][3],TOOLS[1][4],"""<div class="grid"><label>Leads<input id="l" type="number" value="100" min="0"></label><label>Customers<input id="c" type="number" value="10" min="0"></label><label>Revenue ($)<input id="rev" type="number" value="1000" min="0"></label><label>Marketing spend ($)<input id="sp" type="number" value="200" min="0"></label></div><button onclick="calc()">Check KPIs</button><p id="out" class="result"></p><script>function calc(){let l=+document.getElementById('l').value,c=+document.getElementById('c').value,rev=+document.getElementById('rev').value,sp=+document.getElementById('sp').value;let cr=l?100*c/l:0, rpl=l?rev/l:0,roas=sp?rev/sp:0;document.getElementById('out').textContent='Conversion '+cr.toFixed(1)+'% · Revenue/lead $'+rpl.toFixed(2)+' · ROAS '+roas.toFixed(2)+'x'}</script>""")
+
+page("cashflow-checker.html",TOOLS[2][1],TOOLS[2][2],TOOLS[2][3],TOOLS[2][4],"""<label>Company<input id="co" placeholder="Company name"></label><label>Role<input id="role" placeholder="Role"></label><label>Status<textarea id="st" rows="3" placeholder="Applied / Interview / Follow-up"></textarea></label><button onclick="save()">Save locally</button><p id="out" class="result"></p><script>function save(){let x={company:co.value,role:role.value,status:st.value};localStorage.setItem('earnagent-job',JSON.stringify(x));out.textContent='Saved only in this browser.'}</script>""")
+
+links=["<li><a href='free/"+s+".html'>"+html.escape(t)+"</a> — "+html.escape(d)+"</li>" for s,t,d,_,_ in TOOLS]
+index=ROOT/"index.html"
+if index.exists():
+    old=index.read_text(encoding="utf-8")
+    marker="<!-- EARNAGENT_FREE_TOOLS -->"
+    block=marker+"<section><h2>Free tools</h2><p>Try these instantly, then upgrade if you need the full reusable kit.</p><ul>"+''.join(links)+"</ul></section>"
+    if marker in old:
+        old=old.split(marker)[0]+block+old.split(marker,1)[1].split("</section>",1)[-1] if "</section>" in old.split(marker,1)[1] else old
+    else:
+        old=old.replace("</main>",block+"</main>")
+    niche_links="<section><h2>Work-specific guides</h2><p>Free tools and focused workflows for common jobs.</p><ul>"+''.join("<li><a href='niches/"+x[0]+".html'>"+html.escape(x[1])+"</a></li>" for x in NICHE_PAGES)+"</ul></section>"
+    if "</main>" in old:
+        old=old.replace("</main>",niche_links+"</main>")
+    index.write_text(old,encoding="utf-8")
+
+(FREE/"index.html").write_text("<!doctype html><meta charset='utf-8'><title>Free EarnAgent tools</title><h1>Free EarnAgent tools</h1><ul>"+''.join(links)+"</ul>",encoding="utf-8")
+build_niche_pages()
+build_acquisition_guides()
+# Publish a fresh crawl map after all generated acquisition pages exist.
+base_urls=["store/","store/free/","store/niches/"]+[("store/free/"+x[0]+".html") for x in TOOLS]+[("store/niches/"+x[0]+".html") for x in NICHE_PAGES]+["store/guides/"]+[("store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+base="https://dana-909.github.io/earnagent/"
+base_urls=[base+"store/",base+"store/free/",base+"store/niches/",base+"store/guides/"]+[(base+"store/free/"+x[0]+".html") for x in TOOLS]+[(base+"store/niches/"+x[0]+".html") for x in NICHE_PAGES]+[(base+"store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+xml="<?xml version=\"1.0\" encoding=\"UTF-8\"?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"+"".join("<url><loc>"+html.escape(u)+"</loc></url>" for u in base_urls)+"</urlset>"
+(ROOT/"sitemap.xml").write_text(xml,encoding="utf-8")
+(ROOT/"robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: sitemap.xml\n",encoding="utf-8")
+print({"free_tools_and_niche_pages":len(TOOLS),"niche_pages":len(NICHE_PAGES),"acquisition_guides":len(ACQUISITION_GUIDES),"status":"built"})
++aov.toFixed(2)+' · Contribution after fees/ads '+margin.toFixed(1)+'%'}</script>""") type="number" value="100" min="0"></label><label>Customers<input id="c" type="number" value="10" min="0"></label><label>Revenue ($)<input id="rev" type="number" value="1000" min="0"></label><label>Marketing spend ($)<input id="sp" type="number" value="200" min="0"></label></div><button onclick="calc()">Check KPIs</button><p id="out" class="result"></p><script>function calc(){let l=+document.getElementById('l').value,c=+document.getElementById('c').value,rev=+document.getElementById('rev').value,sp=+document.getElementById('sp').value;let cr=l?100*c/l:0, rpl=l?rev/l:0,roas=sp?rev/sp:0;document.getElementById('out').textContent='Conversion '+cr.toFixed(1)+'% · Revenue/lead $'+rpl.toFixed(2)+' · ROAS '+roas.toFixed(2)+'x'}</script>""")
+
+page("cashflow-checker.html",TOOLS[2][1],TOOLS[2][2],TOOLS[2][3],TOOLS[2][4],"""<label>Company<input id="co" placeholder="Company name"></label><label>Role<input id="role" placeholder="Role"></label><label>Status<textarea id="st" rows="3" placeholder="Applied / Interview / Follow-up"></textarea></label><button onclick="save()">Save locally</button><p id="out" class="result"></p><script>function save(){let x={company:co.value,role:role.value,status:st.value};localStorage.setItem('earnagent-job',JSON.stringify(x));out.textContent='Saved only in this browser.'}</script>""")
+
+links=["<li><a href='free/"+s+".html'>"+html.escape(t)+"</a> — "+html.escape(d)+"</li>" for s,t,d,_,_ in TOOLS]
+index=ROOT/"index.html"
+if index.exists():
+    old=index.read_text(encoding="utf-8")
+    marker="<!-- EARNAGENT_FREE_TOOLS -->"
+    block=marker+"<section><h2>Free tools</h2><p>Try these instantly, then upgrade if you need the full reusable kit.</p><ul>"+''.join(links)+"</ul></section>"
+    if marker in old:
+        old=old.split(marker)[0]+block+old.split(marker,1)[1].split("</section>",1)[-1] if "</section>" in old.split(marker,1)[1] else old
+    else:
+        old=old.replace("</main>",block+"</main>")
+    niche_links="<section><h2>Work-specific guides</h2><p>Free tools and focused workflows for common jobs.</p><ul>"+''.join("<li><a href='niches/"+x[0]+".html'>"+html.escape(x[1])+"</a></li>" for x in NICHE_PAGES)+"</ul></section>"
+    if "</main>" in old:
+        old=old.replace("</main>",niche_links+"</main>")
+    index.write_text(old,encoding="utf-8")
+
+(FREE/"index.html").write_text("<!doctype html><meta charset='utf-8'><title>Free EarnAgent tools</title><h1>Free EarnAgent tools</h1><ul>"+''.join(links)+"</ul>",encoding="utf-8")
+build_niche_pages()
+build_acquisition_guides()
+# Publish a fresh crawl map after all generated acquisition pages exist.
+base_urls=["store/","store/free/","store/niches/"]+[("store/free/"+x[0]+".html") for x in TOOLS]+[("store/niches/"+x[0]+".html") for x in NICHE_PAGES]+["store/guides/"]+[("store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+base="https://dana-909.github.io/earnagent/"
+base_urls=[base+"store/",base+"store/free/",base+"store/niches/",base+"store/guides/"]+[(base+"store/free/"+x[0]+".html") for x in TOOLS]+[(base+"store/niches/"+x[0]+".html") for x in NICHE_PAGES]+[(base+"store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+xml="<?xml version=\"1.0\" encoding=\"UTF-8\"?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"+"".join("<url><loc>"+html.escape(u)+"</loc></url>" for u in base_urls)+"</urlset>"
+(ROOT/"sitemap.xml").write_text(xml,encoding="utf-8")
+(ROOT/"robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: sitemap.xml\n",encoding="utf-8")
+print({"free_tools_and_niche_pages":len(TOOLS),"niche_pages":len(NICHE_PAGES),"acquisition_guides":len(ACQUISITION_GUIDES),"status":"built"})
++(rev-leaks).toFixed(2)+' · '+m.toFixed(1)+'% before product cost and other overhead.'}</script>""") type="number" value="10" min="0"></label><label>Hourly rate ($)<input id="r" type="number" value="50" min="0"></label><label>Expenses ($)<input id="e" type="number" value="0" min="0"></label><label>Tax (%)<input id="t" type="number" value="0" min="0"></label></div><button onclick="calc()">Calculate</button><p id="out" class="result"></p><script>function calc(){let h=+document.getElementById('h').value,r=+document.getElementById('r').value,e=+document.getElementById('e').value,t=+document.getElementById('t').value;let sub=h*r+e,total=sub*(1+t/100);document.getElementById('out').textContent='Estimated total: $'+total.toFixed(2)}</script>""")
+
+page("seller-kpi-checker.html",TOOLS[1][1],TOOLS[1][2],TOOLS[1][3],TOOLS[1][4],"""<div class="grid"><label>Leads<input id="l" type="number" value="100" min="0"></label><label>Customers<input id="c" type="number" value="10" min="0"></label><label>Revenue ($)<input id="rev" type="number" value="1000" min="0"></label><label>Marketing spend ($)<input id="sp" type="number" value="200" min="0"></label></div><button onclick="calc()">Check KPIs</button><p id="out" class="result"></p><script>function calc(){let l=+document.getElementById('l').value,c=+document.getElementById('c').value,rev=+document.getElementById('rev').value,sp=+document.getElementById('sp').value;let cr=l?100*c/l:0, rpl=l?rev/l:0,roas=sp?rev/sp:0;document.getElementById('out').textContent='Conversion '+cr.toFixed(1)+'% · Revenue/lead $'+rpl.toFixed(2)+' · ROAS '+roas.toFixed(2)+'x'}</script>""")
+
+page("cashflow-checker.html",TOOLS[2][1],TOOLS[2][2],TOOLS[2][3],TOOLS[2][4],"""<label>Company<input id="co" placeholder="Company name"></label><label>Role<input id="role" placeholder="Role"></label><label>Status<textarea id="st" rows="3" placeholder="Applied / Interview / Follow-up"></textarea></label><button onclick="save()">Save locally</button><p id="out" class="result"></p><script>function save(){let x={company:co.value,role:role.value,status:st.value};localStorage.setItem('earnagent-job',JSON.stringify(x));out.textContent='Saved only in this browser.'}</script>""")
+
+links=["<li><a href='free/"+s+".html'>"+html.escape(t)+"</a> — "+html.escape(d)+"</li>" for s,t,d,_,_ in TOOLS]
+index=ROOT/"index.html"
+if index.exists():
+    old=index.read_text(encoding="utf-8")
+    marker="<!-- EARNAGENT_FREE_TOOLS -->"
+    block=marker+"<section><h2>Free tools</h2><p>Try these instantly, then upgrade if you need the full reusable kit.</p><ul>"+''.join(links)+"</ul></section>"
+    if marker in old:
+        old=old.split(marker)[0]+block+old.split(marker,1)[1].split("</section>",1)[-1] if "</section>" in old.split(marker,1)[1] else old
+    else:
+        old=old.replace("</main>",block+"</main>")
+    niche_links="<section><h2>Work-specific guides</h2><p>Free tools and focused workflows for common jobs.</p><ul>"+''.join("<li><a href='niches/"+x[0]+".html'>"+html.escape(x[1])+"</a></li>" for x in NICHE_PAGES)+"</ul></section>"
+    if "</main>" in old:
+        old=old.replace("</main>",niche_links+"</main>")
+    index.write_text(old,encoding="utf-8")
+
+(FREE/"index.html").write_text("<!doctype html><meta charset='utf-8'><title>Free EarnAgent tools</title><h1>Free EarnAgent tools</h1><ul>"+''.join(links)+"</ul>",encoding="utf-8")
+build_niche_pages()
+build_acquisition_guides()
+# Publish a fresh crawl map after all generated acquisition pages exist.
+base_urls=["store/","store/free/","store/niches/"]+[("store/free/"+x[0]+".html") for x in TOOLS]+[("store/niches/"+x[0]+".html") for x in NICHE_PAGES]+["store/guides/"]+[("store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+base="https://dana-909.github.io/earnagent/"
+base_urls=[base+"store/",base+"store/free/",base+"store/niches/",base+"store/guides/"]+[(base+"store/free/"+x[0]+".html") for x in TOOLS]+[(base+"store/niches/"+x[0]+".html") for x in NICHE_PAGES]+[(base+"store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+xml="<?xml version=\"1.0\" encoding=\"UTF-8\"?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"+"".join("<url><loc>"+html.escape(u)+"</loc></url>" for u in base_urls)+"</urlset>"
+(ROOT/"sitemap.xml").write_text(xml,encoding="utf-8")
+(ROOT/"robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: sitemap.xml\n",encoding="utf-8")
+print({"free_tools_and_niche_pages":len(TOOLS),"niche_pages":len(NICHE_PAGES),"acquisition_guides":len(ACQUISITION_GUIDES),"status":"built"})
++(cash+net).toFixed(2)}</script>""") placeholder="Company name"></label><label>Role<input id="role" placeholder="Role"></label><label>Status<textarea id="st" rows="3" placeholder="Applied / Interview / Follow-up"></textarea></label><button onclick="save()">Save locally</button><p id="out" class="result"></p><script>function save(){let x={company:co.value,role:role.value,status:st.value};localStorage.setItem('earnagent-job',JSON.stringify(x));out.textContent='Saved only in this browser.'}</script>""")
+
+links=["<li><a href='free/"+s+".html'>"+html.escape(t)+"</a> — "+html.escape(d)+"</li>" for s,t,d,_,_ in TOOLS]
+index=ROOT/"index.html"
+if index.exists():
+    old=index.read_text(encoding="utf-8")
+    marker="<!-- EARNAGENT_FREE_TOOLS -->"
+    block=marker+"<section><h2>Free tools</h2><p>Try these instantly, then upgrade if you need the full reusable kit.</p><ul>"+''.join(links)+"</ul></section>"
+    if marker in old:
+        old=old.split(marker)[0]+block+old.split(marker,1)[1].split("</section>",1)[-1] if "</section>" in old.split(marker,1)[1] else old
+    else:
+        old=old.replace("</main>",block+"</main>")
+    niche_links="<section><h2>Work-specific guides</h2><p>Free tools and focused workflows for common jobs.</p><ul>"+''.join("<li><a href='niches/"+x[0]+".html'>"+html.escape(x[1])+"</a></li>" for x in NICHE_PAGES)+"</ul></section>"
+    if "</main>" in old:
+        old=old.replace("</main>",niche_links+"</main>")
+    index.write_text(old,encoding="utf-8")
+
+(FREE/"index.html").write_text("<!doctype html><meta charset='utf-8'><title>Free EarnAgent tools</title><h1>Free EarnAgent tools</h1><ul>"+''.join(links)+"</ul>",encoding="utf-8")
+build_niche_pages()
+build_acquisition_guides()
+# Publish a fresh crawl map after all generated acquisition pages exist.
+base_urls=["store/","store/free/","store/niches/"]+[("store/free/"+x[0]+".html") for x in TOOLS]+[("store/niches/"+x[0]+".html") for x in NICHE_PAGES]+["store/guides/"]+[("store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+base="https://dana-909.github.io/earnagent/"
+base_urls=[base+"store/",base+"store/free/",base+"store/niches/",base+"store/guides/"]+[(base+"store/free/"+x[0]+".html") for x in TOOLS]+[(base+"store/niches/"+x[0]+".html") for x in NICHE_PAGES]+[(base+"store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+xml="<?xml version=\"1.0\" encoding=\"UTF-8\"?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"+"".join("<url><loc>"+html.escape(u)+"</loc></url>" for u in base_urls)+"</urlset>"
+(ROOT/"sitemap.xml").write_text(xml,encoding="utf-8")
+(ROOT/"robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: sitemap.xml\n",encoding="utf-8")
+print({"free_tools_and_niche_pages":len(TOOLS),"niche_pages":len(NICHE_PAGES),"acquisition_guides":len(ACQUISITION_GUIDES),"status":"built"})
++(rev-leaks).toFixed(2)+' · '+m.toFixed(1)+'% before product cost and other overhead.'}</script>""") type="number" value="10" min="0"></label><label>Hourly rate ($)<input id="r" type="number" value="50" min="0"></label><label>Expenses ($)<input id="e" type="number" value="0" min="0"></label><label>Tax (%)<input id="t" type="number" value="0" min="0"></label></div><button onclick="calc()">Calculate</button><p id="out" class="result"></p><script>function calc(){let h=+document.getElementById('h').value,r=+document.getElementById('r').value,e=+document.getElementById('e').value,t=+document.getElementById('t').value;let sub=h*r+e,total=sub*(1+t/100);document.getElementById('out').textContent='Estimated total: $'+total.toFixed(2)}</script>""")
+
+page("seller-kpi-checker.html",TOOLS[1][1],TOOLS[1][2],TOOLS[1][3],TOOLS[1][4],"""<div class="grid"><label>Leads<input id="l" type="number" value="100" min="0"></label><label>Customers<input id="c" type="number" value="10" min="0"></label><label>Revenue ($)<input id="rev" type="number" value="1000" min="0"></label><label>Marketing spend ($)<input id="sp" type="number" value="200" min="0"></label></div><button onclick="calc()">Check KPIs</button><p id="out" class="result"></p><script>function calc(){let l=+document.getElementById('l').value,c=+document.getElementById('c').value,rev=+document.getElementById('rev').value,sp=+document.getElementById('sp').value;let cr=l?100*c/l:0, rpl=l?rev/l:0,roas=sp?rev/sp:0;document.getElementById('out').textContent='Conversion '+cr.toFixed(1)+'% · Revenue/lead $'+rpl.toFixed(2)+' · ROAS '+roas.toFixed(2)+'x'}</script>""")
+
+page("cashflow-checker.html",TOOLS[2][1],TOOLS[2][2],TOOLS[2][3],TOOLS[2][4],"""<label>Company<input id="co" placeholder="Company name"></label><label>Role<input id="role" placeholder="Role"></label><label>Status<textarea id="st" rows="3" placeholder="Applied / Interview / Follow-up"></textarea></label><button onclick="save()">Save locally</button><p id="out" class="result"></p><script>function save(){let x={company:co.value,role:role.value,status:st.value};localStorage.setItem('earnagent-job',JSON.stringify(x));out.textContent='Saved only in this browser.'}</script>""")
+
+links=["<li><a href='free/"+s+".html'>"+html.escape(t)+"</a> — "+html.escape(d)+"</li>" for s,t,d,_,_ in TOOLS]
+index=ROOT/"index.html"
+if index.exists():
+    old=index.read_text(encoding="utf-8")
+    marker="<!-- EARNAGENT_FREE_TOOLS -->"
+    block=marker+"<section><h2>Free tools</h2><p>Try these instantly, then upgrade if you need the full reusable kit.</p><ul>"+''.join(links)+"</ul></section>"
+    if marker in old:
+        old=old.split(marker)[0]+block+old.split(marker,1)[1].split("</section>",1)[-1] if "</section>" in old.split(marker,1)[1] else old
+    else:
+        old=old.replace("</main>",block+"</main>")
+    niche_links="<section><h2>Work-specific guides</h2><p>Free tools and focused workflows for common jobs.</p><ul>"+''.join("<li><a href='niches/"+x[0]+".html'>"+html.escape(x[1])+"</a></li>" for x in NICHE_PAGES)+"</ul></section>"
+    if "</main>" in old:
+        old=old.replace("</main>",niche_links+"</main>")
+    index.write_text(old,encoding="utf-8")
+
+(FREE/"index.html").write_text("<!doctype html><meta charset='utf-8'><title>Free EarnAgent tools</title><h1>Free EarnAgent tools</h1><ul>"+''.join(links)+"</ul>",encoding="utf-8")
+build_niche_pages()
+build_acquisition_guides()
+# Publish a fresh crawl map after all generated acquisition pages exist.
+base_urls=["store/","store/free/","store/niches/"]+[("store/free/"+x[0]+".html") for x in TOOLS]+[("store/niches/"+x[0]+".html") for x in NICHE_PAGES]+["store/guides/"]+[("store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+base="https://dana-909.github.io/earnagent/"
+base_urls=[base+"store/",base+"store/free/",base+"store/niches/",base+"store/guides/"]+[(base+"store/free/"+x[0]+".html") for x in TOOLS]+[(base+"store/niches/"+x[0]+".html") for x in NICHE_PAGES]+[(base+"store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+xml="<?xml version=\"1.0\" encoding=\"UTF-8\"?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"+"".join("<url><loc>"+html.escape(u)+"</loc></url>" for u in base_urls)+"</urlset>"
+(ROOT/"sitemap.xml").write_text(xml,encoding="utf-8")
+(ROOT/"robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: sitemap.xml\n",encoding="utf-8")
+print({"free_tools_and_niche_pages":len(TOOLS),"niche_pages":len(NICHE_PAGES),"acquisition_guides":len(ACQUISITION_GUIDES),"status":"built"})
++aov.toFixed(2)+' · Contribution after fees/ads '+margin.toFixed(1)+'%'}</script>""") type="number" value="100" min="0"></label><label>Customers<input id="c" type="number" value="10" min="0"></label><label>Revenue ($)<input id="rev" type="number" value="1000" min="0"></label><label>Marketing spend ($)<input id="sp" type="number" value="200" min="0"></label></div><button onclick="calc()">Check KPIs</button><p id="out" class="result"></p><script>function calc(){let l=+document.getElementById('l').value,c=+document.getElementById('c').value,rev=+document.getElementById('rev').value,sp=+document.getElementById('sp').value;let cr=l?100*c/l:0, rpl=l?rev/l:0,roas=sp?rev/sp:0;document.getElementById('out').textContent='Conversion '+cr.toFixed(1)+'% · Revenue/lead $'+rpl.toFixed(2)+' · ROAS '+roas.toFixed(2)+'x'}</script>""")
+
+page("cashflow-checker.html",TOOLS[2][1],TOOLS[2][2],TOOLS[2][3],TOOLS[2][4],"""<label>Company<input id="co" placeholder="Company name"></label><label>Role<input id="role" placeholder="Role"></label><label>Status<textarea id="st" rows="3" placeholder="Applied / Interview / Follow-up"></textarea></label><button onclick="save()">Save locally</button><p id="out" class="result"></p><script>function save(){let x={company:co.value,role:role.value,status:st.value};localStorage.setItem('earnagent-job',JSON.stringify(x));out.textContent='Saved only in this browser.'}</script>""")
+
+links=["<li><a href='free/"+s+".html'>"+html.escape(t)+"</a> — "+html.escape(d)+"</li>" for s,t,d,_,_ in TOOLS]
+index=ROOT/"index.html"
+if index.exists():
+    old=index.read_text(encoding="utf-8")
+    marker="<!-- EARNAGENT_FREE_TOOLS -->"
+    block=marker+"<section><h2>Free tools</h2><p>Try these instantly, then upgrade if you need the full reusable kit.</p><ul>"+''.join(links)+"</ul></section>"
+    if marker in old:
+        old=old.split(marker)[0]+block+old.split(marker,1)[1].split("</section>",1)[-1] if "</section>" in old.split(marker,1)[1] else old
+    else:
+        old=old.replace("</main>",block+"</main>")
+    niche_links="<section><h2>Work-specific guides</h2><p>Free tools and focused workflows for common jobs.</p><ul>"+''.join("<li><a href='niches/"+x[0]+".html'>"+html.escape(x[1])+"</a></li>" for x in NICHE_PAGES)+"</ul></section>"
+    if "</main>" in old:
+        old=old.replace("</main>",niche_links+"</main>")
+    index.write_text(old,encoding="utf-8")
+
+(FREE/"index.html").write_text("<!doctype html><meta charset='utf-8'><title>Free EarnAgent tools</title><h1>Free EarnAgent tools</h1><ul>"+''.join(links)+"</ul>",encoding="utf-8")
+build_niche_pages()
+build_acquisition_guides()
+# Publish a fresh crawl map after all generated acquisition pages exist.
+base_urls=["store/","store/free/","store/niches/"]+[("store/free/"+x[0]+".html") for x in TOOLS]+[("store/niches/"+x[0]+".html") for x in NICHE_PAGES]+["store/guides/"]+[("store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+base="https://dana-909.github.io/earnagent/"
+base_urls=[base+"store/",base+"store/free/",base+"store/niches/",base+"store/guides/"]+[(base+"store/free/"+x[0]+".html") for x in TOOLS]+[(base+"store/niches/"+x[0]+".html") for x in NICHE_PAGES]+[(base+"store/guides/"+x[0]+".html") for x in ACQUISITION_GUIDES]
+xml="<?xml version=\"1.0\" encoding=\"UTF-8\"?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"+"".join("<url><loc>"+html.escape(u)+"</loc></url>" for u in base_urls)+"</urlset>"
+(ROOT/"sitemap.xml").write_text(xml,encoding="utf-8")
+(ROOT/"robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: sitemap.xml\n",encoding="utf-8")
+print({"free_tools_and_niche_pages":len(TOOLS),"niche_pages":len(NICHE_PAGES),"acquisition_guides":len(ACQUISITION_GUIDES),"status":"built"})
++(rev-leaks).toFixed(2)+' · '+m.toFixed(1)+'% before product cost and other overhead.'}</script>""") type="number" value="10" min="0"></label><label>Hourly rate ($)<input id="r" type="number" value="50" min="0"></label><label>Expenses ($)<input id="e" type="number" value="0" min="0"></label><label>Tax (%)<input id="t" type="number" value="0" min="0"></label></div><button onclick="calc()">Calculate</button><p id="out" class="result"></p><script>function calc(){let h=+document.getElementById('h').value,r=+document.getElementById('r').value,e=+document.getElementById('e').value,t=+document.getElementById('t').value;let sub=h*r+e,total=sub*(1+t/100);document.getElementById('out').textContent='Estimated total: $'+total.toFixed(2)}</script>""")
+
+page("seller-kpi-checker.html",TOOLS[1][1],TOOLS[1][2],TOOLS[1][3],TOOLS[1][4],"""<div class="grid"><label>Leads<input id="l" type="number" value="100" min="0"></label><label>Customers<input id="c" type="number" value="10" min="0"></label><label>Revenue ($)<input id="rev" type="number" value="1000" min="0"></label><label>Marketing spend ($)<input id="sp" type="number" value="200" min="0"></label></div><button onclick="calc()">Check KPIs</button><p id="out" class="result"></p><script>function calc(){let l=+document.getElementById('l').value,c=+document.getElementById('c').value,rev=+document.getElementById('rev').value,sp=+document.getElementById('sp').value;let cr=l?100*c/l:0, rpl=l?rev/l:0,roas=sp?rev/sp:0;document.getElementById('out').textContent='Conversion '+cr.toFixed(1)+'% · Revenue/lead $'+rpl.toFixed(2)+' · ROAS '+roas.toFixed(2)+'x'}</script>""")
+
+page("cashflow-checker.html",TOOLS[2][1],TOOLS[2][2],TOOLS[2][3],TOOLS[2][4],"""<label>Company<input id="co" placeholder="Company name"></label><label>Role<input id="role" placeholder="Role"></label><label>Status<textarea id="st" rows="3" placeholder="Applied / Interview / Follow-up"></textarea></label><button onclick="save()">Save locally</button><p id="out" class="result"></p><script>function save(){let x={company:co.value,role:role.value,status:st.value};localStorage.setItem('earnagent-job',JSON.stringify(x));out.textContent='Saved only in this browser.'}</script>""")
 
 links=["<li><a href='free/"+s+".html'>"+html.escape(t)+"</a> — "+html.escape(d)+"</li>" for s,t,d,_,_ in TOOLS]
 index=ROOT/"index.html"
