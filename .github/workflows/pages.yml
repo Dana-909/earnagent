@@ -181,6 +181,10 @@ jobs:
           rm -rf public_site
           mkdir -p public_site/store
           cp -R store/. public_site/store/
+          mkdir -p public_site/store/data
+          for f in data/sales_engine.json data/taskmarket_active.json data/base_payments.json data/sales_experiments.json; do
+            if [ -f "$f" ]; then cp "$f" "public_site/store/data/$(basename "$f")"; fi
+          done
           cp store/robots.txt public_site/robots.txt
           cp store/sitemap.xml public_site/sitemap.xml
           cat > public_site/index.html <<'HTML'
