@@ -56,6 +56,13 @@ jobs:
         run: |
           python3 agent_souk_scout.py | tee agent_souk_scout_run.json
           test -s data/agent_souk_market.json
+      - name: Restore Agent Souk state
+        uses: actions/cache/restore@v6
+        with:
+          path: data/agentsouk_state.json
+          key: earnagent-agentsouk-state-${{ github.run_id }}
+          restore-keys: |
+            earnagent-agentsouk-state-
       - name: Run autonomous Agent Souk seller
         continue-on-error: true
         env:
@@ -69,6 +76,12 @@ jobs:
           python3 -m pip install -q agentsouk eth-account openai
           python3 agentsouk_worker.py | tee agentsouk_worker_run.json
           test -s data/agentsouk_run.json
+      - name: Save Agent Souk state
+        if: always()
+        uses: actions/cache/save@v6
+        with:
+          path: data/agentsouk_state.json
+          key: earnagent-agentsouk-state-${{ github.run_id }}
       - name: Install Taskmarket CLI
         run: npm install -g @lucid-agents/taskmarket@latest
       - name: Verify Taskmarket CLI
