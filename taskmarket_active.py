@@ -170,17 +170,20 @@ def main():
                 chosen_submit=submit or (submit_paid if paid_ok else None)
             if not chosen_submit: continue
             ext={"html":"html","svg":"svg","md":"md","logo":"zip"}[fmt]; path=OUT/("auto_"+task_id+"."+ext)
+            # First attempt a deterministic deliverable. AI review must never block
+            # a safe adapter that can produce the requested artifact without model access.
             office=None
-            if os.environ.get("OPENAI_API_KEY") and ai_count < MAX_AI:
-                office=collaborate({"description":desc,"reward_usd":float(t.get("reward") or 0)/1000000,"mode":mode,"task_id":task_id},fmt)
-                # Office review is planning, not the final deliverable call.
-            if office:
-                decision=office.get("decision") or office.get("recommendation")
-                out.setdefault("office_reviews",[]).append({"id":task_id,"roles":office.get("office_roles",[]),"model":office.get("model"),"decision":decision,"fixer":office.get("fixer")})
-                if decision in ("skip","hold"):
-                    out["skipped"].append({"id":task_id,"reason":"office_decision_"+str(decision)})
-                    continue
             ok,meta=deterministic_deliverable(desc,fmt,path)
+            if ok:
+                # Optional office review happens only after a usable artifact exists.
+                try:
+                    if os.environ.get("OPENAI_API_KEY") and ai_count < MAX_AI:
+                        office=collaborate({"description":desc,"reward_usd":float(t.get("reward") or 0)/1000000,"mode":mode,"task_id":task_id},fmt)
+                        if office:
+                            out.setdefault("office_reviews",[]).append({"id":task_id,"roles":office.get("office_roles",[]),"model":office.get("model"),"decision":office.get("decision") or office.get("recommendation"),"fixer":office.get("fixer")})
+                            ai_count += 1
+                except Exception as e:
+                    out.setdefault("skipped",[]).append({"id":task_id,"reason":"optional_office_review_failed: "+str(e)[:120]})
             if not ok:
                 if not os.environ.get("OPENAI_API_KEY") or ai_count >= MAX_AI:
                     out["skipped"].append({"id":task_id,"reason":"AI_required_but_unavailable"})
