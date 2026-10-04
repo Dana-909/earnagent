@@ -8,7 +8,7 @@ NETWORKS={
 }
 WALLET=(os.getenv("EARNAGENT_SALES_WALLET_ADDRESS") or os.getenv("TASKMARKET_WALLET_ADDRESS") or "0x948B78F80ba73E846B27171f31E3609b0e399701").lower()
 TRANSFER="0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55aeb2a5b4e5"
-PRICES={"freelancer-invoice-kit":7.0,"small-business-kpi-dashboard":9.0,"content-calendar-kit":5.0,"job-application-tracker":4.0,"svg-social-icon-pack":6.0,"project-planning-kit":8.0}
+PRICES={"marketplace-profit-leak-audit":29.0,"marketplace-ops-dashboard":49.0,"ai-listing-optimization-kit":39.0,"seller-cashflow-planner":19.0,"ecommerce-kpi-review-kit":24.0,"marketplace-automation-blueprint":79.0}
 STATE=Path("data/base_payments.json")
 def call(url,method,params):
  req=urllib.request.Request(url,data=json.dumps({"jsonrpc":"2.0","id":1,"method":method,"params":params}).encode(),headers={"Content-Type":"application/json"})
