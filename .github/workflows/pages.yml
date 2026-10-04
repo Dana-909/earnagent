@@ -94,7 +94,7 @@ jobs:
               if t.get("mode")!="bounty" or not t.get("submissionWindowOpen"): continue
               if t.get("stakeRequired"): continue
               # Only self-contained single-file work with no account, purchase, or mandated external model.
-              if ("one self-contained offline html file" in desc or "one self-contained static svg" in desc) and not any(x in desc for x in ("claude opus","purchase","sign in with","api key")):
+              if (("one self-contained offline html file" in desc or "one self-contained static svg" in desc or ("markdown" in desc and any(x in desc for x in ("article","report","research summary","documentation","readme","essay","plain text","copywriting")))) and not any(x in desc for x in ("claude opus","purchase","sign in with","api key","login","password","external account","send an email","phone call"))):
                   p=subprocess.run(["taskmarket","task","get",t["id"]],capture_output=True,text=True)
                   try:
                       detail=json.loads(p.stdout)
