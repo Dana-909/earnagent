@@ -63,3 +63,11 @@ urls = ["","free/marketplace-profit-checker.html","free/seller-kpi-checker.html"
 urls += ["guides/"+x[0]+".html" for x in GUIDE_ROWS]
 urls += ["guides/"+x[0]+".html" for x in PLATFORM_PAGES]
 (ROOT/"sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join('<url><loc>https://dana-909.github.io/earnagent/store/'+x+'</loc></url>' for x in urls)+'</urlset>',encoding="utf-8")
+# Keep the independent DealPilot acquisition site discoverable after each funnel rebuild.
+if (DEALPILOT/"index.html").exists():
+    deal_urls=["dealpilot/index.html","dealpilot/subscription-break-even.html","dealpilot/phone-total-cost.html","dealpilot/car-monthly-cost.html","dealpilot/buy-vs-rent.html"]
+    current=ROOT/"sitemap.xml"
+    xml=current.read_text(encoding="utf-8") if current.exists() else ""
+    if "dealpilot/index.html" not in xml:
+        xml=xml.replace("</urlset>","".join('<url><loc>https://dana-909.github.io/earnagent/store/'+u+'</loc></url>' for u in deal_urls)+"</urlset>")
+        current.write_text(xml,encoding="utf-8")
