@@ -111,7 +111,7 @@ def main():
         jobs=aw.jobs.list(role="seller")
         rows=jobs.get("data",jobs) if isinstance(jobs,dict) else jobs
         rows=rows if isinstance(rows,list) else []
-        out.update({"enabled":True,"agent_id":me.get("id"),"listing_id":listing_id,"jobs_seen":len(rows)})
+        out.update({"enabled":True,"agent_id":me.get("id"),"listing_id":listing_id,"listing_count":len(listings),"listing_titles":[x.get("title") for x in listings],"jobs_seen":len(rows)})
         for job in rows[:8]:
             status=str(job.get("status",""))
             if status in ("completed","cancelled","expired","declined","disputed","resolved"): continue
