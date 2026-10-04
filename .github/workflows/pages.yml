@@ -46,6 +46,11 @@ jobs:
               q.write_text(ss)
           compile(q.read_text(),"scanner.py","exec")
           PY
+      - name: Scout Circle x402 agent revenue market
+        continue-on-error: true
+        run: |
+          python3 agent_revenue_scout.py | tee agent_revenue_scout_run.json
+          test -s data/agent_revenue_market.json
       - name: Scout Agent Souk paid demand
         continue-on-error: true
         run: |
