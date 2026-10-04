@@ -56,6 +56,19 @@ jobs:
         run: |
           python3 agent_souk_scout.py | tee agent_souk_scout_run.json
           test -s data/agent_souk_market.json
+      - name: Run autonomous Agent Souk seller
+        continue-on-error: true
+        env:
+          AGENTSOUK_API_KEY: ${{ secrets.AGENTSOUK_API_KEY }}
+          EARNAGENT_AGENT_PRIVATE_KEY: ${{ secrets.EARNAGENT_AGENT_PRIVATE_KEY }}
+          TASKMARKET_AGENT_PRIVATE_KEY: ${{ secrets.TASKMARKET_AGENT_PRIVATE_KEY }}
+          EARNAGENT_AGENT_WALLET_ADDRESS: ${{ secrets.TASKMARKET_WALLET_ADDRESS }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          EARNAGENT_MODEL: gpt-5.6-luna
+        run: |
+          python3 -m pip install -q agentsouk eth-account openai
+          python3 agentsouk_worker.py | tee agentsouk_worker_run.json
+          test -s data/agentsouk_run.json
       - name: Install Taskmarket CLI
         run: npm install -g @lucid-agents/taskmarket@latest
       - name: Verify Taskmarket CLI
