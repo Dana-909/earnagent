@@ -40,6 +40,12 @@ def main():
         except Exception: key=None
     wallet=os.getenv("EARNAGENT_AGENT_WALLET_ADDRESS") or os.getenv("TASKMARKET_WALLET_ADDRESS")
     private=os.getenv("EARNAGENT_AGENT_PRIVATE_KEY") or os.getenv("TASKMARKET_AGENT_PRIVATE_KEY")
+    if private and not wallet:
+        try:
+            from eth_account import Account
+            wallet=Account.from_key(private).address
+        except Exception:
+            wallet=None
     try:
         from agentsouk import AgentSouk, wallet_message
         if not key:
@@ -105,7 +111,7 @@ def main():
                 prompt=("Create a concise, evidence-grounded comparison brief. Objective: "+objective+
                         "\nUse ONLY the supplied source material. Do not invent facts. Return JSON with keys "
                         "objective,sources,findings,risks,recommendation. Each finding must cite source numbers.\n\n"+material)
-                resp=client.responses.create(model=os.getenv("EARNAGENT_MODEL","gpt-5.6-luna"),input=prompt)
+                resp=client.responses.create(model=os.getenv("EARNAGENT_MODEL","gpt-6-luna"),input=prompt)
                 txt=resp.output_text
                 try: result=json.loads(txt)
                 except Exception: result={"objective":objective,"sources":[p["url"] for p in pages],"findings":[txt],"risks":[],"recommendation":"See findings."}
