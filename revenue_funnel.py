@@ -40,3 +40,26 @@ for slug,title,desc,free,product in GUIDE_ROWS:
 (ROOT/"sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join('<url><loc>https://dana-909.github.io/earnagent/store/'+x+'</loc></url>' for x in ["","free/marketplace-profit-checker.html","free/seller-kpi-checker.html","free/cashflow-checker.html","free/cross-platform-profit-checker.html","niches/marketplace-sellers.html"])+''.join('<url><loc>https://dana-909.github.io/earnagent/store/guides/'+x[0]+'.html</loc></url>' for x in GUIDE_ROWS)+'</urlset>',encoding="utf-8")
 (ROOT/"robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: sitemap.xml\n",encoding="utf-8")
 print({"free_tools":len(TOOLS),"guides":len(GUIDE_ROWS),"niches":1,"status":"built"})
+
+
+# Platform-intent acquisition pages. These use generic seller-profit language rather than
+# asserting current platform fee schedules, so they remain useful without brittle claims.
+PLATFORM_PAGES = [
+ ("amazon-seller-profit-calculator","Amazon Seller Profit Calculator","Estimate contribution margin for an Amazon-style marketplace workflow using your own fee, ad, return and fulfillment inputs.","marketplace-profit-checker.html","marketplace-profit-rescue-report"),
+ ("etsy-seller-profit-calculator","Etsy Seller Profit Calculator","Estimate contribution after your own marketplace fees, ads, discounts, returns and operating time.","marketplace-profit-checker.html","marketplace-profit-rescue-report"),
+ ("ebay-seller-profit-calculator","eBay Seller Profit Calculator","Compare seller contribution after the costs you actually incur on an eBay-style marketplace workflow.","marketplace-profit-checker.html","marketplace-profit-rescue-report"),
+ ("shopify-seller-profit-calculator","Shopify Seller Profit Calculator","Model store contribution, advertising, refunds and operating time using your own numbers.","marketplace-profit-checker.html","marketplace-profit-rescue-report"),
+]
+
+for slug,title,desc,free,product in PLATFORM_PAGES:
+ body=f"""<div class="cta"><b>Run the free model first:</b> <a href="../free/{html.escape(free)}">Open the profit checker</a></div>
+ <h2>What this calculator measures</h2>
+ <p>Enter your own selling price, product cost, transaction costs, advertising, refunds and operating time. The goal is to estimate contribution from your actual economics rather than assume a platform fee schedule.</p>
+ <h2>Simple workflow</h2><ol><li>Enter one representative product or order.</li><li>Include every cost you actually pay.</li><li>Compare contribution before and after operational changes.</li><li>Repeat monthly as your economics change.</li></ol>"""
+ (GUIDES/(slug+".html")).write_text(page(title,desc,product,"see store",body),encoding="utf-8")
+
+# Rebuild sitemap after adding platform-intent pages.
+urls = ["","free/marketplace-profit-checker.html","free/seller-kpi-checker.html","free/cashflow-checker.html","free/cross-platform-profit-checker.html","niches/marketplace-sellers.html"]
+urls += ["guides/"+x[0]+".html" for x in GUIDE_ROWS]
+urls += ["guides/"+x[0]+".html" for x in PLATFORM_PAGES]
+(ROOT/"sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join('<url><loc>https://dana-909.github.io/earnagent/store/'+x+'</loc></url>' for x in urls)+'</urlset>',encoding="utf-8")
