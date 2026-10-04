@@ -163,16 +163,37 @@ def render_direct_checkout(products):
     wallet=WALLET
     prices={p["slug"]:float(p["price"]) for p in products}
     labels={p["slug"]:p["title"] for p in products}
-    data=json.dumps({"prices":prices,"labels":labels},ensure_ascii=False)
+    contracts={
+        "base":"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "arbitrum":"0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+        "polygon":"0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+        "optimism":"0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
+    }
+    networks={
+        "base":{"label":"Base","chain_id":8453,"explorer":"https://basescan.org/tx/"},
+        "arbitrum":{"label":"Arbitrum One","chain_id":42161,"explorer":"https://arbiscan.io/tx/"},
+        "polygon":{"label":"Polygon PoS","chain_id":137,"explorer":"https://polygonscan.com/tx/"},
+        "optimism":{"label":"Optimism","chain_id":10,"explorer":"https://optimistic.etherscan.io/tx/"},
+    }
+    data=json.dumps({"prices":prices,"labels":labels,"contracts":contracts,"networks":networks,"wallet":wallet},ensure_ascii=False)
     html="""<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>EarnAgent USDC Checkout</title>
-<style>body{font:16px system-ui,sans-serif;margin:0;background:#101820;color:#f5f1e8}main{max-width:760px;margin:auto;padding:28px}.card{background:#18252e;padding:22px;border-radius:16px;margin:16px 0}code{display:block;overflow-wrap:anywhere;padding:12px;background:#24333d;border-radius:8px}.cta{display:inline-block;padding:11px 14px;background:#d8f3dc;color:#10201b;border-radius:9px;text-decoration:none;border:0}small{opacity:.8}</style></head>
-<body><main><h1>EarnAgent checkout</h1><div class="card"><h2 id="product">Product</h2><p>Price: <b id="amount">—</b> USDC</p><p>Network: <b id="network">Base</b></p><p>Send the exact amount to:</p><code id="wallet"></code><button class="cta" onclick="navigator.clipboard&&navigator.clipboard.writeText(wallet.textContent)">Copy address</button><p><small>Only matching on-chain USDC transfers to this address are counted as paid. Verification is performed automatically by EarnAgent.</small></p></div><p><a href="index.html" style="color:#b9e4ff">Back to store</a></p>
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>EarnAgent — USDC checkout</title>
+<style>body{font:16px system-ui,sans-serif;margin:0;background:#101820;color:#f5f1e8}main{max-width:820px;margin:auto;padding:28px}.card{background:#18252e;padding:22px;border-radius:16px;margin:16px 0}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}select{font:inherit;padding:11px;width:100%;box-sizing:border-box}code{display:block;overflow-wrap:anywhere;padding:12px;background:#24333d;border-radius:8px}.cta{display:inline-block;padding:11px 14px;background:#d8f3dc;color:#10201b;border-radius:9px;text-decoration:none;border:0;cursor:pointer}small{opacity:.82}@media(max-width:650px){.row{grid-template-columns:1fr}}</style></head>
+<body><main><h1>EarnAgent checkout</h1><div class="card"><div class="row"><label>Product<select id="product"></select></label><label>Network<select id="network"></select></label></div>
+<p>Exact price: <b id="amount">—</b> USDC</p><p>USDC contract: <code id="contract"></code></p><p>Recipient wallet:</p><code id="wallet"></code><button class="cta" id="copy">Copy wallet</button>
+<p><small>Send the exact USDC amount on the selected network to the recipient above. EarnAgent counts a sale only after an on-chain transfer matches product amount, native USDC contract, recipient and network. After payment, enter the transaction hash to verify.</small></p>
+<p><a id="verify" class="cta" href="#">Verify payment</a></p></div><p><a href="index.html" style="color:#b9e4ff">Back to store</a></p>
 <script>
-const catalog=CATALOG;const qs=new URLSearchParams(location.search);const key=qs.get("product")||Object.keys(catalog.prices)[0];const nets={base:"Base",arbitrum:"Arbitrum One",polygon:"Polygon PoS",optimism:"Optimism"};const n=qs.get("network")||"base";
-document.getElementById("product").textContent=catalog.labels[key]||"EarnAgent product";document.getElementById("amount").textContent=Number(catalog.prices[key]||0).toFixed(2);document.getElementById("network").textContent=nets[n]||"Base";document.getElementById("wallet").textContent="WALLET";
+const catalog=CATALOG;const qs=new URLSearchParams(location.search);
+const productEl=document.getElementById("product"),networkEl=document.getElementById("network");
+Object.entries(catalog.labels).forEach(([k,v])=>{const o=document.createElement("option");o.value=k;o.textContent=v+" — $"+Number(catalog.prices[k]).toFixed(2);productEl.appendChild(o)});
+Object.entries(catalog.networks).forEach(([k,v])=>{const o=document.createElement("option");o.value=k;o.textContent=v.label+" (chain "+v.chain_id+")";networkEl.appendChild(o)});
+productEl.value=catalog.prices[qs.get("product")]?qs.get("product"):Object.keys(catalog.prices)[0];
+networkEl.value=catalog.networks[qs.get("network")]?qs.get("network"):"base";
+function render(){const p=productEl.value,n=networkEl.value;document.getElementById("amount").textContent=Number(catalog.prices[p]).toFixed(2);document.getElementById("contract").textContent=catalog.contracts[n];document.getElementById("wallet").textContent=catalog.wallet;document.getElementById("verify").href="verify.html?product="+encodeURIComponent(p)+"&network="+encodeURIComponent(n);history.replaceState(null,"","pay.html?product="+encodeURIComponent(p)+"&network="+encodeURIComponent(n))}
+productEl.onchange=render;networkEl.onchange=render;document.getElementById("copy").onclick=()=>navigator.clipboard&&navigator.clipboard.writeText(catalog.wallet);render();
 </script></main></body></html>"""
-    html=html.replace("CATALOG",data).replace("WALLET",wallet)
+    html=html.replace("CATALOG",data)
     (ROOT/"pay.html").write_text(html,encoding="utf-8")
 
 def render_discovery_files(products):
