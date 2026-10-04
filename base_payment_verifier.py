@@ -1,10 +1,10 @@
 import json,os,urllib.request
 from pathlib import Path
 NETWORKS={
- "base":{"rpc":"https://mainnet.base.org","usdc":"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"},
- "arbitrum":{"rpc":"https://arb1.arbitrum.io/rpc","usdc":"0xaf88d065e77c8cC2239327C5EDb3A432268e5831"},
- "polygon":{"rpc":"https://polygon-rpc.com","usdc":"0x3c499c542cef5e3811e1192ce70d8cc03d5c3359"},
- "optimism":{"rpc":"https://mainnet.optimism.io","usdc":"0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"},
+ "base":{"rpcs":["https://base-rpc.publicnode.com","https://public.1rpc.io/base","https://mainnet.base.org"],"usdc":"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"},
+ "arbitrum":{"rpcs":["https://arbitrum-one-rpc.publicnode.com","https://public.1rpc.io/arbitrum","https://arb1.arbitrum.io/rpc"],"usdc":"0xaf88d065e77c8cC2239327C5EDb3A432268e5831"},
+ "polygon":{"rpcs":["https://polygon-bor-rpc.publicnode.com","https://public.1rpc.io/matic","https://polygon-rpc.com"],"usdc":"0x3c499c542cef5e3811e1192ce70d8cc03d5c3359"},
+ "optimism":{"rpcs":["https://optimism-rpc.publicnode.com","https://public.1rpc.io/optimism","https://mainnet.optimism.io"],"usdc":"0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"},
 }
 WALLET=(os.getenv("EARNAGENT_SALES_WALLET_ADDRESS") or os.getenv("TASKMARKET_WALLET_ADDRESS") or "0x948B78F80ba73E846B27171f31E3609b0e399701").lower()
 TRANSFER="0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55aeb2a5b4e5"
@@ -12,17 +12,29 @@ PRICES={"freelancer-invoice-kit":7.0,"small-business-kpi-dashboard":9.0,"content
 STATE=Path("data/base_payments.json")
 def call(url,method,params):
  req=urllib.request.Request(url,data=json.dumps({"jsonrpc":"2.0","id":1,"method":method,"params":params}).encode(),headers={"Content-Type":"application/json"})
- with urllib.request.urlopen(req,timeout=20) as r: return json.loads(r.read().decode()).get("result")
+ with urllib.request.urlopen(req,timeout=15) as r:
+  payload=json.loads(r.read().decode())
+  if payload.get("error"): raise RuntimeError(str(payload["error"])[:240])
+  return payload.get("result")
+
+def call_any(urls,method,params):
+ last=None
+ for url in urls:
+  try: return call(url,method,params)
+  except Exception as e: last=e
+ raise last or RuntimeError("no RPC endpoint available")
 def main():
  state=json.loads(STATE.read_text()) if STATE.exists() else {}
  seen=set(state.get("tx_keys",[])); transfers=[]; blocks=dict(state.get("last_blocks",{}))
  for name,cfg in NETWORKS.items():
   try:
-   latest=int(call(cfg["rpc"],"eth_blockNumber",[]),16); start=int(blocks.get(name,max(0,latest-50000)))+1
+   latest=int(call_any(cfg["rpcs"],"eth_blockNumber",[]),16)
+   # Keep the first scan bounded; subsequent runs advance from the persisted block.
+   start=int(blocks.get(name,max(0,latest-5000)))+1
    if start>latest: start=latest
    topic="0x"+"0"*24+WALLET[2:]
    for a in range(start,latest+1,10000):
-    b=min(latest,a+9999); logs=call(cfg["rpc"],"eth_getLogs",[{"address":cfg["usdc"],"fromBlock":hex(a),"toBlock":hex(b),"topics":[TRANSFER,None,topic]}]) or []
+    b=min(latest,a+9999); logs=call_any(cfg["rpcs"],"eth_getLogs",[{"address":cfg["usdc"],"fromBlock":hex(a),"toBlock":hex(b),"topics":[TRANSFER,None,topic]}]) or []
     for log in logs:
      tx=log.get("transactionHash"); key=name+":"+str(tx)
      if not tx or key in seen: continue
