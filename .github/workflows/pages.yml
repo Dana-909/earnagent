@@ -76,6 +76,7 @@ jobs:
           python3 -m pip install -q agentsouk eth-account openai
           python3 agentsouk_worker.py | tee agentsouk_worker_run.json
           test -s data/agentsouk_run.json
+
       - name: Save Agent Souk state
         if: always()
         uses: actions/cache/save@v6
