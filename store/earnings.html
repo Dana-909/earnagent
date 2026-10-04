@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EarnAgent — Earnings Dashboard</title>
+<meta name="description" content="Real verified earnings dashboard for EarnAgent. Only confirmed revenue is counted.">
+<style>body{font:16px system-ui;margin:0;background:#f4f1ea;color:#18242b}main{max-width:980px;margin:32px auto;padding:24px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{background:#fff;border:1px solid #ddd;border-radius:16px;padding:20px}.big{font-size:2rem;font-weight:800}.muted{color:#667}.ok{font-weight:700}.table{width:100%;border-collapse:collapse;background:#fff}.table td,.table th{padding:12px;border-bottom:1px solid #eee;text-align:left}@media(max-width:700px){.grid{grid-template-columns:1fr}}</style></head>
+<body><main><p><a href="dealpilot/">← DealPilot</a></p><h1>Earnings Dashboard</h1><p class="muted">This dashboard never invents sales. A transaction appears only when the runtime has verified it.</p>
+<div class="grid"><div class="card"><div class="muted">Verified revenue</div><div id="revenue" class="big">$0.00</div></div><div class="card"><div class="muted">Verified sales</div><div id="sales" class="big">0</div></div><div class="card"><div class="muted">Pending / awards</div><div id="pending" class="big">$0.00</div></div></div>
+<h2>Sources</h2><table class="table"><thead><tr><th>Source</th><th>Status</th><th>Verified</th></tr></thead><tbody id="rows"><tr><td>Loading…</td><td>—</td><td>—</td></tr></tbody></table>
+<h2>How money reaches you</h2><p>Verified balances can be withdrawn through the payment rail that generated them. Affiliate networks and card processors may require account approval and identity/payment verification before payouts.</p>
+<p class="muted">Last runtime refresh: <span id="updated">—</span></p>
+<script>
+async function load(){
+ const out={sales:{},task:{}};
+ try{out.sales=await fetch("data/sales_engine.json?"+Date.now()).then(r=>r.json())}catch(e){}
+ try{out.task=await fetch("data/taskmarket_active.json?"+Date.now()).then(r=>r.json())}catch(e){}
+ const s=out.sales||{}, t=out.task||{};
+ const rev=Number(s.verified_revenue_usd||s.real_revenue_usd||0);
+ const sales=Number(s.real_sales||s.verified_sales||0);
+ const pending=Number(t.pending_revenue_usd||t.awards_pending_usd||0);
+ document.getElementById("revenue").textContent="$"+rev.toFixed(2);
+ document.getElementById("sales").textContent=String(sales);
+ document.getElementById("pending").textContent="$"+pending.toFixed(2);
+ const rows=[
+ ["Direct / store", s.lemon_squeezy_configured?"Connected":"USDC / verification"],
+ ["Taskmarket", Number(t.awards||0)>0?"Awards detected":"Scanning for funded work"],
+ ["Affiliate / CPA","Not connected","Requires partner approval"]
+ ];
+ document.getElementById("rows").innerHTML=rows.map(r=>"<tr><td>"+r[0]+"</td><td>"+(r[1]||"—")+"</td><td>"+(r[2]||"$"+(r[0].startsWith("Direct")?rev:pending).toFixed(2))+"</td></tr>").join("");
+ document.getElementById("updated").textContent=new Date().toLocaleString();
+}
+load();
+</script></main></body></html>
