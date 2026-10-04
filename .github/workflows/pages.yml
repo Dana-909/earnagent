@@ -189,6 +189,12 @@ jobs:
         with:
           path: data/base_payments.json
           key: earnagent-payments-${{ github.run_id }}
+      - name: Build Max Vector creator content
+        run: |
+          python3 persona_engine.py | tee persona_engine_run.json
+          test -s content/persona.json
+          test -s content/publish_queue.json
+
       - name: Build autonomous sales catalog
         env:
           TASKMARKET_WALLET_ADDRESS: ${{ secrets.TASKMARKET_WALLET_ADDRESS }}
