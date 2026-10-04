@@ -7,12 +7,12 @@ PRODUCTS.mkdir(parents=True,exist_ok=True); STATE.parent.mkdir(exist_ok=True)
 WALLET=os.getenv("TASKMARKET_WALLET_ADDRESS") or "0x948B78F80ba73E846B27171f31E3609b0e399701"
 BASE_USDC="USDC on Base"
 PRODUCTS_PLAN=[
- {"slug":"freelancer-invoice-kit","title":"Freelancer Invoice & Quote Kit","price":7.00,"kind":"html","pitch":"A clean offline invoice and quote generator for freelancers and small service businesses."},
- {"slug":"small-business-kpi-dashboard","title":"Small Business KPI Dashboard","price":9.00,"kind":"html","pitch":"A self-contained browser dashboard for tracking revenue, leads, conversion and monthly targets."},
- {"slug":"content-calendar-kit","title":"30-Day Content Calendar Kit","price":5.00,"kind":"md","pitch":"A practical 30-day content planning system with reusable planning fields and publishing checklists."},
- {"slug":"job-application-tracker","title":"Job Application Tracker","price":4.00,"kind":"html","pitch":"A private offline tracker for applications, stages, contacts, interviews and follow-ups."},
- {"slug":"svg-social-icon-pack","title":"Minimal Social Icon SVG Pack","price":6.00,"kind":"svg","pitch":"Original lightweight SVG assets for common web UI uses."},
- {"slug":"project-planning-kit","title":"Project Planning & Risk Kit","price":8.00,"kind":"md","pitch":"A compact project planning system covering scope, milestones, risks, decisions and retrospectives."},
+ {"slug":"marketplace-profit-leak-audit","title":"Marketplace Profit Leak Audit Kit","price":29.00,"kind":"html","pitch":"A practical seller-ops audit that estimates margin leakage across fees, returns, ads, discounts and manual work."},
+ {"slug":"marketplace-ops-dashboard","title":"Marketplace Ops Dashboard","price":49.00,"kind":"html","pitch":"A browser-based operating dashboard for orders, revenue, fees, ad spend, returns, margin and weekly priorities."},
+ {"slug":"ai-listing-optimization-kit","title":"AI Listing Optimization Kit","price":39.00,"kind":"md","pitch":"A repeatable workflow for improving marketplace titles, descriptions, attributes and creative briefs with measurable tests."},
+ {"slug":"seller-cashflow-planner","title":"Seller Cashflow Planner","price":19.00,"kind":"html","pitch":"A lightweight cashflow planner for marketplace sellers that models payouts, fees, ad spend and upcoming obligations."},
+ {"slug":"ecommerce-kpi-review-kit","title":"Ecommerce KPI Review Kit","price":24.00,"kind":"md","pitch":"A weekly operating review system for conversion, contribution margin, returns, inventory and channel performance."},
+ {"slug":"marketplace-automation-blueprint","title":"Marketplace Automation Blueprint","price":79.00,"kind":"md","pitch":"A prioritized blueprint for reducing repetitive marketplace operations with AI and workflow automation."},
 ]
 
 def write_product(p):
