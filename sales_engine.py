@@ -121,16 +121,21 @@ def ai_product_variant(seed):
     except Exception: return None
 
 def load_verified_sales():
+    """Merge only real, verified sales from enabled payment rails."""
     try:
         data=json.loads(STATE.read_text()) if STATE.exists() else {}
-        orders=[o for o in data.get("lemon_squeezy",{}).get("paid_orders",[]) if not o.get("test_mode")]
         by_name={}
-        for o in orders:
-            name=o.get("product_name")
-            if name:
-                by_name.setdefault(name,{"sales":0,"revenue":0.0})
-                by_name[name]["sales"]+=1
-                by_name[name]["revenue"]+=float(o.get("total_usd",0) or 0)
+        def add(name, amount):
+            if not name: return
+            by_name.setdefault(name,{"sales":0,"revenue":0.0})
+            by_name[name]["sales"]+=1
+            by_name[name]["revenue"]+=float(amount or 0)
+        for o in data.get("lemon_squeezy",{}).get("paid_orders",[]):
+            if not o.get("test_mode"): add(o.get("product_name"),o.get("total_usd",0))
+        for t in data.get("base_payments",{}).get("verified_transfers",[]):
+            if t.get("verified"):
+                p=next((x for x in PRODUCTS_PLAN if x["slug"]==t.get("product")),None)
+                add(p["title"] if p else t.get("product"),t.get("amount_usd",0))
         return by_name
     except Exception:
         return {}
@@ -171,16 +176,21 @@ document.getElementById("product").textContent=catalog.labels[key]||"EarnAgent p
     (ROOT/"pay.html").write_text(html,encoding="utf-8")
 
 def render_discovery_files(products):
-    """Create discovery assets without deleting the acquisition funnel."""
+    """Build one sitemap from the complete generated acquisition surface."""
     (ROOT/"robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: https://dana-909.github.io/earnagent/store/sitemap.xml\n",encoding="utf-8")
-    urls=[""]+[f"products/{p['slug']}.{p['kind']}" for p in products]
-    urls += ["free/marketplace-profit-checker.html","free/seller-kpi-checker.html","free/cashflow-checker.html",
-             "niches/marketplace-sellers.html"]
-    urls += ["guides/marketplace-profit-leak-audit.html","guides/seller-margin-calculator.html",
-             "guides/seller-ops-dashboard.html","guides/ecommerce-automation-blueprint.html",
-             "guides/cashflow-marketplace-seller.html","guides/ai-marketplace-listing.html"]
+    urls=["","pay.html"]+[f"products/{p['slug']}.{p['kind']}" for p in products]
+    urls += [
+        "free/marketplace-profit-checker.html","free/seller-kpi-checker.html","free/cashflow-checker.html",
+        "free/cross-platform-profit-checker.html","niches/marketplace-sellers.html",
+        "guides/marketplace-profit-leak-audit.html","guides/seller-margin-calculator.html",
+        "guides/seller-ops-dashboard.html","guides/ecommerce-automation-blueprint.html",
+        "guides/cashflow-marketplace-seller.html","guides/ai-marketplace-listing.html",
+        "guides/cross-platform-profit-comparison.html",
+        "amazon-seller-profit-calculator.html","etsy-seller-profit-calculator.html",
+        "ebay-seller-profit-calculator.html","shopify-seller-profit-calculator.html",
+    ]
     xml=['<?xml version="1.0" encoding="UTF-8"?>','<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
-    for u in urls: xml.append(f"<url><loc>https://dana-909.github.io/earnagent/store/{u}</loc></url>")
+    for u in dict.fromkeys(urls): xml.append(f"<url><loc>https://dana-909.github.io/earnagent/store/{u}</loc></url>")
     xml.append("</urlset>")
     (ROOT/"sitemap.xml").write_text("\n".join(xml),encoding="utf-8")
 
