@@ -46,6 +46,11 @@ jobs:
               q.write_text(ss)
           compile(q.read_text(),"scanner.py","exec")
           PY
+      - name: Scout Agent Souk paid demand
+        continue-on-error: true
+        run: |
+          python3 agent_souk_scout.py | tee agent_souk_scout_run.json
+          test -s data/agent_souk_market.json
       - name: Install Taskmarket CLI
         run: npm install -g @lucid-agents/taskmarket@latest
       - name: Verify Taskmarket CLI
